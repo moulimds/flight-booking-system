@@ -1,0 +1,3 @@
+com\example\fare\service\FareServiceTest.class
+com\example\fare\controller\FareControllerTest.class
+com\example\fare\messaging\FareValidationListenerTest.class
