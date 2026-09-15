@@ -1,8 +1,6 @@
 package com.flightbooking.auth.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-
 import java.time.Instant;
 
 @Entity
@@ -33,6 +31,12 @@ public class User {
 
 	@Column(nullable = false)
 	private boolean emailVerified = false;
+
+	@Column(name = "reset_otp")
+	private String resetOtp;
+
+	@Column(name = "reset_otp_expiry")
+	private Instant resetOtpExpiry;
 
 	@Column(name = "created_at", updatable = false)
 	private Instant createdAt;
@@ -89,6 +93,14 @@ public class User {
 		return emailVerified;
 	}
 
+	public String getResetOtp() {
+		return resetOtp;
+	}
+
+	public Instant getResetOtpExpiry() {
+		return resetOtpExpiry;
+	}
+
 	public Instant getCreatedAt() {
 		return createdAt != null ? createdAt : Instant.now();
 	}
@@ -127,6 +139,14 @@ public class User {
 
 	public void setEmailVerified(boolean emailVerified) {
 		this.emailVerified = emailVerified;
+	}
+
+	public void setResetOtp(String resetOtp) {
+		this.resetOtp = resetOtp;
+	}
+
+	public void setResetOtpExpiry(Instant resetOtpExpiry) {
+		this.resetOtpExpiry = resetOtpExpiry;
 	}
 
 	public void setCreatedAt(Instant createdAt) {

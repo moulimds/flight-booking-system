@@ -47,12 +47,14 @@ public class AuthController {
 
 	@PostMapping("/forgot-password")
 	public Map<String, String> forgotPassword(@RequestParam String email) {
-		return Map.of("message", "If the account exists, a password-reset process should be initiated.");
+		String otp = service.forgotPassword(email);
+		return Map.of("message", "OTP generated successfully and valid for 10 minutes", "otp", otp);
 	}
 
 	@PostMapping("/reset-password")
-	public Map<String, String> resetPassword() {
-		return Map.of("message", "Reset flow placeholder. Connect email/OTP provider in production.");
+	public Map<String, String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+		service.resetPassword(request);
+		return Map.of("message", "Password reset successfully");
 	}
 
 	@PostMapping("/verify-email")

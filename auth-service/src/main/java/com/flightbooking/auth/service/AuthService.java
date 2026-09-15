@@ -5,7 +5,10 @@ import com.flightbooking.auth.model.Role;
 import com.flightbooking.auth.model.User;
 import com.flightbooking.auth.repository.UserRepository;
 import com.flightbooking.auth.security.JwtService;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Random;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -89,6 +92,31 @@ public class AuthService {
     public void verifyEmail(Long id) {
         User u = currentUser(id);
         u.setEmailVerified(true);
+        repo.save(u);
+    }
+
+    public String forgotPassword(String email) {
+        User u = repo.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with this email not found"));
+        String otp = String.format("%06d", new Random().nextInt(1000000));
+        u.setResetOtp(otp);
+        u.setResetOtpExpiry(Instant.now().plus(10, ChronoUnit.MINUTES));
+        repo.save(u);
+        return otp;
+    }
+
+    public void resetPassword(ResetPasswordRequest r) {
+        User u = repo.findByEmailIgnoreCase(r.email())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request or user not found"));
+        if (u.getResetOtp() == null || !u.getResetOtp().equals(r.otp())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid OTP");
+        }
+        if (u.getResetOtpExpiry() == null || Instant.now().isAfter(u.getResetOtpExpiry())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP has expired");
+        }
+        u.setPasswordHash(encoder.encode(r.newPassword()));
+        u.setResetOtp(null);
+        u.setResetOtpExpiry(null);
         repo.save(u);
     }
 }
