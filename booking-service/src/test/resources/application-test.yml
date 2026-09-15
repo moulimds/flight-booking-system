@@ -1,0 +1,42 @@
+server:
+  port: 0
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:booking_test_db;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
+
+flight:
+  rabbitmq:
+    exchange: flight.booking.exchange
+    routing-key:
+      fare-validate: fare.validate
+      fare-response: fare.validation.response
+      booking-created: booking.created
+      booking-confirmed: booking.confirmed
+      booking-cancelled: booking.cancelled
+      payment-request: payment.request
+    queue:
+      fare-response: booking.fare.response.queue
+      fare-validate: fare.validation.queue
+      payment: booking.payment.queue
+      notification: booking.notification.queue
+    dlx: flight.booking.dlx
+    dlq: flight.booking.dlq
+    fare-validation-timeout-ms: 3000
+
+eureka:
+  client:
+    enabled: false
+
