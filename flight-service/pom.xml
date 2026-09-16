@@ -12,6 +12,7 @@
     <artifactId>flight-service</artifactId>
     <name>Flight Service</name>
     <description>Flight Management Service - GOKUL</description>
+         
 
     <dependencies>
         <dependency>
