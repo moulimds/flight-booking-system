@@ -19,11 +19,13 @@ public class AuthService {
     private final UserRepository repo;
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
+    private final EmailService emailService;
 
-    public AuthService(UserRepository repo, PasswordEncoder encoder, JwtService jwtService) {
+    public AuthService(UserRepository repo, PasswordEncoder encoder, JwtService jwtService, EmailService emailService) {
         this.repo = repo;
         this.encoder = encoder;
         this.jwtService = jwtService;
+        this.emailService = emailService;
     }
 
     public User register(RegisterRequest r) {
@@ -37,7 +39,14 @@ public class AuthService {
         u.setRole(Role.CUSTOMER);
         u.setActive(true);
         u.setEmailVerified(false);
-        return repo.save(u);
+        
+        String verificationOtp = String.format("%06d", new Random().nextInt(1000000));
+        u.setVerificationOtp(verificationOtp);
+        u.setVerificationOtpExpiry(Instant.now().plus(15, ChronoUnit.MINUTES));
+        
+        User savedUser = repo.save(u);
+        emailService.sendRegistrationVerificationOtp(savedUser.getEmail(), verificationOtp);
+        return savedUser;
     }
 
     public User adminRegister(AdminRegisterRequest r) {
@@ -95,6 +104,21 @@ public class AuthService {
         repo.save(u);
     }
 
+    public void verifyEmailByOtp(VerifyEmailRequest r) {
+        User u = repo.findByEmailIgnoreCase(r.email())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if (u.getVerificationOtp() == null || !u.getVerificationOtp().equals(r.otp())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid verification OTP");
+        }
+        if (u.getVerificationOtpExpiry() == null || Instant.now().isAfter(u.getVerificationOtpExpiry())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Verification OTP has expired");
+        }
+        u.setEmailVerified(true);
+        u.setVerificationOtp(null);
+        u.setVerificationOtpExpiry(null);
+        repo.save(u);
+    }
+
     public String forgotPassword(String email) {
         User u = repo.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with this email not found"));
@@ -102,6 +126,7 @@ public class AuthService {
         u.setResetOtp(otp);
         u.setResetOtpExpiry(Instant.now().plus(10, ChronoUnit.MINUTES));
         repo.save(u);
+        emailService.sendPasswordResetOtp(u.getEmail(), otp);
         return otp;
     }
 

@@ -25,7 +25,12 @@ public class AuthController {
 	@PostMapping("/register")
 	public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
 		User u = service.register(request);
-		return ResponseEntity.status(201).body(Map.of("id", u.getId(), "email", u.getEmail(), "role", u.getRole()));
+		return ResponseEntity.status(201).body(Map.of(
+			"id", u.getId(),
+			"email", u.getEmail(),
+			"role", u.getRole(),
+			"message", "Registration successful. A 6-digit verification code has been sent to your email."
+		));
 	}
 
 	@PostMapping("/login")
@@ -48,7 +53,7 @@ public class AuthController {
 	@PostMapping("/forgot-password")
 	public Map<String, String> forgotPassword(@RequestParam String email) {
 		String otp = service.forgotPassword(email);
-		return Map.of("message", "OTP generated successfully and valid for 10 minutes", "otp", otp);
+		return Map.of("message", "Password reset OTP has been sent to your email", "otp", otp);
 	}
 
 	@PostMapping("/reset-password")
@@ -58,9 +63,9 @@ public class AuthController {
 	}
 
 	@PostMapping("/verify-email")
-	public Map<String, String> verifyEmail(Authentication authentication) {
-		service.verifyEmail(Long.valueOf(authentication.getName()));
-		return Map.of("message", "Email verified");
+	public Map<String, String> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+		service.verifyEmailByOtp(request);
+		return Map.of("message", "Email verified successfully");
 	}
 
 	@PostMapping("/validate-token")

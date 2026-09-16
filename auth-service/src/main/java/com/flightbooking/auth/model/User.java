@@ -38,6 +38,12 @@ public class User {
 	@Column(name = "reset_otp_expiry")
 	private Instant resetOtpExpiry;
 
+	@Column(name = "verification_otp")
+	private String verificationOtp;
+
+	@Column(name = "verification_otp_expiry")
+	private Instant verificationOtpExpiry;
+
 	@Column(name = "created_at", updatable = false)
 	private Instant createdAt;
 
@@ -101,6 +107,14 @@ public class User {
 		return resetOtpExpiry;
 	}
 
+	public String getVerificationOtp() {
+		return verificationOtp;
+	}
+
+	public Instant getVerificationOtpExpiry() {
+		return verificationOtpExpiry;
+	}
+
 	public Instant getCreatedAt() {
 		return createdAt != null ? createdAt : Instant.now();
 	}
@@ -147,6 +161,14 @@ public class User {
 
 	public void setResetOtpExpiry(Instant resetOtpExpiry) {
 		this.resetOtpExpiry = resetOtpExpiry;
+	}
+
+	public void setVerificationOtp(String verificationOtp) {
+		this.verificationOtp = verificationOtp;
+	}
+
+	public void setVerificationOtpExpiry(Instant verificationOtpExpiry) {
+		this.verificationOtpExpiry = verificationOtpExpiry;
 	}
 
 	public void setCreatedAt(Instant createdAt) {
