@@ -1,0 +1,12 @@
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\CheckinServiceApplication.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\controller\CheckInController.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\dto\BaggageRequest.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\dto\CheckInRequest.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\dto\SeatRequest.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\model\CheckIn.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\model\CheckInStatus.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\repository\CheckInRepository.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\security\JwtAuthenticationFilter.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\security\JwtService.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\security\SecurityConfig.java
+C:\Capgemini_Sprint_WorkShop\flight-booking-system\checkin-service\src\main\java\com\flightbooking\checkin\service\CheckInService.java
