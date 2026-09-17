@@ -131,7 +131,7 @@ public class FlightServiceImpl implements FlightService {
             flight.setStatus(request.getStatus().toUpperCase());
         }
 
-        Flight updatedFlight = flightRepository.save(flight);
+        Flight updatedFlight = flightRepository.save(flight)
 
         try {
             flightEventPublisher.publishFlightUpdated(new FlightUpdatedEvent(
@@ -199,7 +199,7 @@ public class FlightServiceImpl implements FlightService {
         } else if (destination != null) {
             return getFlightsByDestination(destination);
         }
-        return getAllFlights();
+        return getAllFlights()
     }
 
     @Override
