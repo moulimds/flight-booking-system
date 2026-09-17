@@ -10,10 +10,11 @@ import java.util.List;
 
 public interface FlightService {
     FlightResponse createFlight(FlightRequest request);
-    List<FlightResponse> getAllFlights();
+    
+    List<FlightResponse> getAllFlights()
     FlightResponse getFlightById(Long id);
     FlightResponse getFlightByFlightNumber(String flightNumber);
-    FlightResponse updateFlight(Long id, FlightRequest request);
+    FlightResponse updateFlight(Long id, FlightRequest request)
     void deleteFlight(Long id);
     List<FlightResponse> getFlightsBySource(String source);
     List<FlightResponse> getFlightsByDestination(String destination);
