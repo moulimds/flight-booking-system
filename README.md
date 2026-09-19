@@ -85,13 +85,13 @@ The system includes services for:
 
 ## Project Team
 
-| Team Member | Services / Responsibilities             |
-| ----------- | --------------------------------------- |
-| Mouli       | Configuration, Invoice, Payment, CI/CD  |
-| Sindhu      | Booking, Fare                           |
-| Ashad       | Seat, Notification, API Gateway, Eureka |
-| Gokul       | Flight, Search, Profile                 |
-| Abinesh     | Auth, Check-in, Flight Tracking         |
+| Team Member | Services / Responsibilities |
+|---|---|
+| Mouli | Configuration, Invoice, Payment, CI/CD |
+| Sindhu | Booking, Fare, Development, Testing (JUnit 5, Mockito) |
+| Ashad | Seat, Notification, API Gateway, Eureka |
+| Gokul | Flight, Search, Profile |
+| Abinesh | Auth, Check-in, Flight Tracking |
 
 ---
 
