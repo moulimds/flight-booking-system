@@ -4,9 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-/**
- * Invoice Service - Owned by MONI
- */
+
 @SpringBootApplication
 @EnableDiscoveryClient
 public class InvoiceServiceApplication {
