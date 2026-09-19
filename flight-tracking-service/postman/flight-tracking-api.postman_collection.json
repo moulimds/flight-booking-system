@@ -1,0 +1,205 @@
+{
+  "info": {
+    "name": "Flight Tracking Service API Collection",
+    "description": "Complete Postman collection for testing Standalone Flight Tracking Microservice",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Create Direct Flight (Chennai -> Delhi)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"flightNumber\": \"AI202\",\n  \"legs\": [\n    {\n      \"legNumber\": 1,\n      \"source\": \"Chennai\",\n      \"destination\": \"Delhi\",\n      \"scheduledDepartureTime\": \"2026-09-18T10:00:00\",\n      \"scheduledArrivalTime\": \"2026-09-18T13:00:00\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8086/api/flights",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "flights"]
+        }
+      }
+    },
+    {
+      "name": "2. Create Multi-Way Flight (Chennai -> Mumbai -> Delhi -> Kolkata)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"flightNumber\": \"AI500\",\n  \"legs\": [\n    {\n      \"legNumber\": 1,\n      \"source\": \"Chennai\",\n      \"destination\": \"Mumbai\",\n      \"scheduledDepartureTime\": \"2026-09-18T08:00:00\",\n      \"scheduledArrivalTime\": \"2026-09-18T10:00:00\"\n    },\n    {\n      \"legNumber\": 2,\n      \"source\": \"Mumbai\",\n      \"destination\": \"Delhi\",\n      \"scheduledDepartureTime\": \"2026-09-18T11:00:00\",\n      \"scheduledArrivalTime\": \"2026-09-18T13:00:00\"\n    },\n    {\n      \"legNumber\": 3,\n      \"source\": \"Delhi\",\n      \"destination\": \"Kolkata\",\n      \"scheduledDepartureTime\": \"2026-09-18T14:00:00\",\n      \"scheduledArrivalTime\": \"2026-09-18T16:00:00\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8086/api/flights",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "flights"]
+        }
+      }
+    },
+    {
+      "name": "3. Get All Flights",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8086/api/flights",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "flights"]
+        }
+      }
+    },
+    {
+      "name": "4. Get Flight By Flight Number",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8086/api/flights/AI500",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "flights", "AI500"]
+        }
+      }
+    },
+    {
+      "name": "5. Start Flight Tracking (AI202)",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "http://localhost:8086/api/tracking/flights/AI202/start",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "tracking", "flights", "AI202", "start"]
+        }
+      }
+    },
+    {
+      "name": "6. Get Current Tracking Detail",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8086/api/tracking/flights/AI202",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "tracking", "flights", "AI202"]
+        }
+      }
+    },
+    {
+      "name": "7. Get Live Position (Lat, Lon, Alt, Speed, Heading)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8086/api/tracking/flights/AI202/position",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "tracking", "flights", "AI202", "position"]
+        }
+      }
+    },
+    {
+      "name": "8. Get Complete Journey History",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8086/api/tracking/flights/AI500/journey",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "tracking", "flights", "AI500", "journey"]
+        }
+      }
+    },
+    {
+      "name": "9. Stop Flight Tracking",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "http://localhost:8086/api/tracking/flights/AI202/stop",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "tracking", "flights", "AI202", "stop"]
+        }
+      }
+    },
+    {
+      "name": "10. Test Duplicate Flight Number (Error 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"flightNumber\": \"AI202\",\n  \"legs\": [\n    {\n      \"legNumber\": 1,\n      \"source\": \"Chennai\",\n      \"destination\": \"Delhi\",\n      \"scheduledDepartureTime\": \"2026-09-18T10:00:00\",\n      \"scheduledArrivalTime\": \"2026-09-18T13:00:00\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8086/api/flights",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "flights"]
+        }
+      }
+    },
+    {
+      "name": "11. Test Invalid Flight (Source == Destination Error 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"flightNumber\": \"AI999\",\n  \"legs\": [\n    {\n      \"legNumber\": 1,\n      \"source\": \"Chennai\",\n      \"destination\": \"Chennai\",\n      \"scheduledDepartureTime\": \"2026-09-18T10:00:00\",\n      \"scheduledArrivalTime\": \"2026-09-18T13:00:00\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8086/api/flights",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "flights"]
+        }
+      }
+    },
+    {
+      "name": "12. Test Flight Not Found (Error 404)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8086/api/flights/INVALID99",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8086",
+          "path": ["api", "flights", "INVALID99"]
+        }
+      }
+    }
+  ]
+}
