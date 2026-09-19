@@ -418,11 +418,13 @@ Verify Notification
 
 ## Team Responsibilities
 
-mouli - confioguration,invoice, payment,cicd 
-sindhu - booking, fare, 
-ashad - seat,notification,api,eureka
-Gokul - flight, search, profile
-abinesh - auth, checkin, flight tracking
+| Team Member | Responsibilities |
+|-------------|------------------|
+| Mouli | Configuration Service, Invoice Service, Payment Service, CI/CD |
+| Sindhu | Booking Service, Fare Service |
+| Ashad | Seat Service, Notification Service, API Gateway, Eureka Server |
+| Gokul | Flight Service, Search Service, Profile Service |
+| Abinesh | Auth Service, Check-in Service, Flight Tracking Service |
 
 ## Project Objective
 
