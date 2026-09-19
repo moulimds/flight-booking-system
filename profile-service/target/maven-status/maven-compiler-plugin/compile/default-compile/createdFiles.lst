@@ -1,0 +1,15 @@
+com\flight\profile\controller\ProfileController.class
+com\flight\profile\service\ProfileService.class
+com\flight\profile\entity\UserProfile.class
+com\flight\profile\service\ProfileServiceImpl.class
+com\flight\profile\dto\PassportUpdateRequest.class
+com\flight\profile\exception\ResourceNotFoundException.class
+com\flight\profile\ProfileServiceApplication.class
+com\flight\profile\dto\ProfileRequest.class
+com\flight\profile\dto\ProfileResponse.class
+com\flight\profile\exception\ErrorResponse.class
+com\flight\profile\exception\DuplicateResourceException.class
+com\flight\profile\exception\UnauthorizedException.class
+com\flight\profile\exception\GlobalExceptionHandler.class
+com\flight\profile\dto\ContactUpdateRequest.class
+com\flight\profile\repository\UserProfileRepository.class
