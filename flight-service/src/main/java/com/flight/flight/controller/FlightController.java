@@ -84,8 +84,8 @@ public class FlightController {
 
     @GetMapping("/search")
     public ResponseEntity<List<FlightResponse>> searchFlights(
-            @RequestParam(value = "source", required = false) String source,
-            @RequestParam(value = "destination", required = false) String destination,
+            @RequestParam(value = "source", required = true) String source,
+            @RequestParam(value = "destination", required = true) String destination,
             @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         logger.info("REST request to search flights: source={}, destination={}, date={}", source, destination, date);
         List<FlightResponse> flights = flightService.searchFlights(source, destination, date);
