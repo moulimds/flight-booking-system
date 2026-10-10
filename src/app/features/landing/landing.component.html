@@ -1,0 +1,262 @@
+<div class="min-h-screen bg-white">
+  <!-- AirLink Navigation -->
+  <nav class="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="assets/icons/skywings-icon.svg" alt="SkyWings Logo" class="w-10 h-10 rounded-2xl shadow-lg shadow-blue-500/25 object-cover" />
+      <span class="text-2xl font-black text-slate-900 tracking-tight">Sky<span class="text-blue-600">Wings</span></span>
+    </div>
+
+    <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+      <a routerLink="/" class="text-blue-600 font-bold">Home</a>
+      <a routerLink="/flights/dashboard" class="hover:text-blue-600 transition-colors">Flights & Fares</a>
+      <a routerLink="/tracking/live-radar" class="hover:text-blue-600 transition-colors">Live Radar</a>
+      <a routerLink="/tickets/my-tickets" class="hover:text-blue-600 transition-colors">My Bookings</a>
+      <a routerLink="/support" class="hover:text-emerald-700 text-emerald-800 font-bold transition-colors flex items-center gap-1">
+        <span>💬</span> Customer Support
+      </a>
+      <a *ngIf="authService.isAdmin" routerLink="/admin/dashboard" class="text-blue-600 font-bold hover:text-blue-700 transition-colors">Admin Console</a>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <!-- Theme Toggle Button -->
+      <button (click)="themeService.toggleTheme()"
+              type="button"
+              [title]="themeService.isDark() ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 hover:bg-slate-100 cursor-pointer text-xs font-semibold text-slate-700 transition-all">
+        <span *ngIf="themeService.isDark(); else moonIconLanding" class="flex items-center gap-1 text-amber-500 font-bold">
+          ☀️ <span class="hidden sm:inline">Light</span>
+        </span>
+        <ng-template #moonIconLanding>
+          <span class="flex items-center gap-1 text-slate-600 font-bold">
+            🌙 <span class="hidden sm:inline">Dark</span>
+          </span>
+        </ng-template>
+      </button>
+
+      <!-- When Logged In: Show Profile & Sign Out, REMOVE Sign In & Sign Up -->
+      <ng-container *ngIf="authService.currentUser$ | async as user; else guestNav">
+        <div class="relative" (appClickOutside)="isProfileOpen = false">
+          <div (click)="isProfileOpen = !isProfileOpen"
+               class="flex items-center gap-3 p-1.5 pr-3.5 rounded-full hover:bg-slate-50 border border-slate-200 cursor-pointer transition-all shadow-xs bg-white">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-xs uppercase shadow-sm">
+              {{ (user.fullName || user.email || 'U').substring(0, 2) }}
+            </div>
+            <div class="text-left hidden sm:block">
+              <span class="block text-xs font-black text-slate-800 leading-none">{{ user.fullName || user.email }}</span>
+              <span class="text-[10px] text-slate-400 font-semibold uppercase">{{ user.role }}</span>
+            </div>
+            <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" [ngClass]="{'rotate-180': isProfileOpen}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+
+          <!-- Profile Dropdown Menu -->
+          <div *ngIf="isProfileOpen" 
+               class="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in duration-150">
+            <div class="px-4 py-2 border-b border-slate-100 text-xs">
+              <span class="font-bold text-slate-800 block">{{ user.fullName || 'Logged In' }}</span>
+              <span class="text-[11px] text-slate-500 truncate block">{{ user.email }}</span>
+            </div>
+            <a routerLink="/profile" (click)="isProfileOpen = false" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">
+              👤 My Profile
+            </a>
+            <a routerLink="/tickets/my-tickets" (click)="isProfileOpen = false" class="block px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">
+              🎫 My Bookings
+            </a>
+            <div *ngIf="authService.isAdmin" class="border-t border-slate-100 my-1"></div>
+            <a *ngIf="authService.isAdmin" routerLink="/admin/dashboard" (click)="isProfileOpen = false" class="block px-4 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50">
+              ⚙️ Admin Dashboard
+            </a>
+            <div class="border-t border-slate-100 my-1"></div>
+            <button type="button" (click)="authService.logout(); isProfileOpen = false" class="w-full text-left px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50">
+              🚪 Sign Out
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- When Logged Out: Show Sign In & Sign Up -->
+      <ng-template #guestNav>
+        <a routerLink="/auth/login" class="text-sm font-bold text-slate-700 hover:text-blue-600 px-4 py-2">Sign In</a>
+        <a routerLink="/auth/register" class="btn btn-primary btn-sm shadow-md">Sign Up</a>
+      </ng-template>
+    </div>
+  </nav>
+
+  <!-- BOOKING CONFIRMATION NOTIFICATION BANNER (When returning from completed booking/payment) -->
+  <div *ngIf="confirmedBookingReference" class="max-w-7xl mx-auto px-8 mb-4 animate-in fade-in slide-in-from-top-4 duration-300">
+    <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/20 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl shadow-sm">
+          🎉
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-black uppercase tracking-wider">Booking Successfully Confirmed!</span>
+            <span class="px-2.5 py-0.5 rounded-full bg-white text-emerald-800 text-xs font-black font-mono shadow-xs">
+              PNR: {{ confirmedBookingReference }}
+            </span>
+          </div>
+          <p class="text-xs text-emerald-100 font-medium mt-0.5">
+            Your flight booking is confirmed in the database.
+            <span *ngIf="confirmedAmount"> Total fare paid: ₹{{ confirmedAmount }}</span>
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a routerLink="/tickets/my-tickets" 
+           class="px-4 py-2 rounded-xl bg-white text-emerald-800 hover:bg-emerald-50 font-black text-xs transition-all shadow-sm">
+          View My Bookings & Tickets →
+        </a>
+        <button type="button" (click)="dismissBookingBanner()" 
+                class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-xs transition-all">
+          ✕
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO SECTION -->
+  <section class="relative overflow-hidden pt-4 pb-24">
+    <div class="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-bl from-blue-500/10 via-blue-400/5 to-transparent rounded-bl-[140px] -z-10"></div>
+
+    <div class="max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <!-- Left Hero Image (High Definition Global Route Network) -->
+      <div class="lg:col-span-6 relative">
+        <div class="relative w-full h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/20 group border border-slate-100">
+          <img src="assets/images/hero-flight.png" alt="Emirates A380 Flight Global Route Network" 
+               class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 brightness-105 contrast-105">
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent flex flex-col justify-end p-7">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse"></span>
+              <span class="text-xs font-black text-sky-400 uppercase tracking-widest">Global Route Network</span>
+            </div>
+            <h3 class="text-2xl font-black text-white leading-tight">Experience Luxury in the Skies</h3>
+            <p class="text-xs text-slate-300 mt-1 max-w-md font-medium">Connecting 120+ international airports and domestic hubs with ultra-high-definition flight tracking and seamless scheduling.</p>
+          </div>
+          <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-lg text-xs font-black text-blue-700 flex items-center gap-1.5 border border-white/50">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            Live Microservices Connected
+          </div>
+          <div class="absolute top-4 left-4 bg-slate-900/70 backdrop-blur-md px-3 py-1 rounded-full text-[11px] font-extrabold text-white flex items-center gap-1.5 border border-white/20">
+            <span>🌐</span>
+            <span>Ultra HD Route Network</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Content -->
+      <div class="lg:col-span-6 space-y-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold tracking-wide uppercase">
+          <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
+          Direct Airline Booking
+        </div>
+
+        <h1 class="text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
+          Your Journey to <br>
+          <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Every Destination</span>
+        </h1>
+
+        <p class="text-base text-slate-600 leading-relaxed max-w-lg">
+          Discover seamless travel with real-time seat selection, instant electronic tickets in Indian Rupees (₹), live flight tracking, and automated refunds.
+        </p>
+
+        <div class="flex items-center gap-4 pt-2">
+          <a routerLink="/flights/dashboard" class="btn btn-primary px-8 py-3.5 text-base shadow-lg shadow-blue-600/30">
+            Search Flights Now
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+          </a>
+          <a routerLink="/tracking/live-radar" class="btn btn-secondary px-6 py-3.5 text-base">
+            Live Flight Radar
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK SEARCH WIDGET -->
+    <div class="max-w-6xl mx-auto px-8 mt-12">
+      <form [formGroup]="quickSearchForm" (ngSubmit)="onQuickSearch()"
+            class="bg-white rounded-3xl p-6 shadow-2xl shadow-slate-300/40 border border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+        
+        <!-- From -->
+        <div class="p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
+          <label class="form-label flex items-center gap-1.5 text-xs font-bold text-slate-600">
+            <span>✈</span> From (Source)
+          </label>
+          <input type="text" formControlName="origin" placeholder="e.g. DEL (Delhi) or BOM"
+                 class="w-full bg-transparent font-bold text-sm text-slate-800 outline-none">
+        </div>
+
+        <!-- To -->
+        <div class="p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
+          <label class="form-label flex items-center gap-1.5 text-xs font-bold text-slate-600">
+            <span>📍</span> To (Destination)
+          </label>
+          <input type="text" formControlName="destination" placeholder="e.g. BLR (Bengaluru) or MAA"
+                 class="w-full bg-transparent font-bold text-sm text-slate-800 outline-none">
+        </div>
+
+        <!-- Departure Date -->
+        <div class="p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
+          <label class="form-label flex items-center gap-1.5 text-xs font-bold text-slate-600">
+            <span>📅</span> Departure Date
+          </label>
+          <input type="date" formControlName="departureDate"
+                 class="w-full bg-transparent font-bold text-sm text-slate-800 outline-none">
+        </div>
+
+        <!-- Search Action Button -->
+        <button type="submit"
+                class="h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-2xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-blue-600/30 transition-all transform hover:scale-[1.02]">
+          <span>Search Flights</span>
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- LUXURY CABIN & SERVICE SHOWCASE -->
+  <section class="max-w-7xl mx-auto px-8 py-16 border-t border-slate-100">
+    <div class="text-center max-w-2xl mx-auto mb-12 space-y-2">
+      <span class="text-xs font-bold uppercase tracking-widest text-blue-600">World-Class Experience</span>
+      <h2 class="text-3xl font-black text-slate-900">Fly in Supreme Comfort</h2>
+      <p class="text-sm text-slate-500">From our spacious A380 business lounge to personalized inflight care by our dedicated cabin crew.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Card 1: Cabin Lounge -->
+      <div class="rounded-3xl overflow-hidden bg-slate-50 border border-slate-200 shadow-sm group">
+        <div class="h-56 overflow-hidden">
+          <img src="assets/images/cabin-lounge.png" alt="Luxury Cabin Lounge" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+        </div>
+        <div class="p-6 space-y-2">
+          <h3 class="text-lg font-extrabold text-slate-900">Onboard Lounge & Bar</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">Relax above the clouds in premium first & business class lounges with chef-crafted refreshments.</p>
+        </div>
+      </div>
+
+      <!-- Card 2: Crew Welcome -->
+      <div class="rounded-3xl overflow-hidden bg-slate-50 border border-slate-200 shadow-sm group">
+        <div class="h-56 overflow-hidden">
+          <img src="assets/images/cabin-crew.png" alt="Dedicated Cabin Crew" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+        </div>
+        <div class="p-6 space-y-2">
+          <h3 class="text-lg font-extrabold text-slate-900">Warm Hospitality</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">Our multilingual crew is trained to international safety standards, making every flight enjoyable.</p>
+        </div>
+      </div>
+
+      <!-- Card 3: Modern Fleet -->
+      <div class="rounded-3xl overflow-hidden bg-slate-50 border border-slate-200 shadow-sm group">
+        <div class="h-56 overflow-hidden">
+          <img src="assets/images/british-airways.png" alt="British Airways A380" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+        </div>
+        <div class="p-6 space-y-2">
+          <h3 class="text-lg font-extrabold text-slate-900">Modern Aircraft Fleet</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">Fly with confidence on cutting-edge Airbus A380s and state-of-the-art aircraft across global routes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

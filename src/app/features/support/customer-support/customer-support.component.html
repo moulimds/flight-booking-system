@@ -1,0 +1,364 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+  <!-- ============================================================== -->
+  <!-- TOP BANNER: 24/7 SUPPORT DESK HEADER                          -->
+  <!-- ============================================================== -->
+  <div class="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+    <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+    
+    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="space-y-2">
+        <div class="flex items-center gap-2">
+          <span class="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-black uppercase tracking-wider text-white border border-white/20 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            24x7 Live Customer Care
+          </span>
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-200 text-[11px] font-extrabold border border-emerald-400/30">
+            Instant AI Assistant Active
+          </span>
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl font-black tracking-tight">
+          SkyWings Customer Support & Help Desk
+        </h1>
+
+        <p class="text-xs sm:text-sm text-blue-100 max-w-2xl leading-relaxed">
+          Ask questions about round-trip & multi-city flights, meal selection, 8-hour booking restriction, weekly schedules, ticket cancellations, refunds, payments, and web check-in.
+        </p>
+      </div>
+
+      <!-- Authenticated User Profile Pill -->
+      <div class="shrink-0 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-xs space-y-1.5 min-w-[240px]">
+        <span class="text-[10px] font-extrabold uppercase text-blue-200 tracking-wider block">Authenticated Customer</span>
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-white text-blue-700 font-black flex items-center justify-center text-xs shadow-xs">
+            {{ (authService.currentUserValue?.fullName || authService.currentUserValue?.email || 'U').substring(0, 2).toUpperCase() }}
+          </div>
+          <div>
+            <span class="font-bold text-white block text-xs">{{ authService.currentUserValue?.fullName || 'Verified Traveler' }}</span>
+            <span class="text-[11px] text-blue-200 block truncate max-w-[160px]">{{ authService.currentUserValue?.email }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- SUGGESTED QUESTIONS CHIPS (QUICK PROMPTS)                      -->
+  <!-- ============================================================== -->
+  <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+        <span>💡</span> Suggested Topics & Common Inquiries
+      </span>
+      <span class="text-[11px] text-slate-400 font-bold">Click any prompt to ask instantly</span>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <button *ngFor="let item of suggestedQuestions"
+              (click)="askSuggestedQuestion(item)"
+              type="button"
+              class="px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 text-slate-700 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5">
+        <span>👉</span>
+        <span>{{ item.text }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MAIN WORKSPACE: 2 COLUMNS (CHAT SESSION vs KNOWLEDGE BASE)      -->
+  <!-- ============================================================== -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- ============================================================ -->
+    <!-- LEFT COLUMN: RESPONSIVE INTERACTIVE CHAT INTERFACE (7 COLS)  -->
+    <!-- ============================================================ -->
+    <div class="lg:col-span-7 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col h-[680px] overflow-hidden">
+      
+      <!-- Chat Header Bar -->
+      <div class="p-4 px-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black flex items-center justify-center text-base shadow-sm">
+              ✈️
+            </div>
+            <span class="w-3 h-3 rounded-full bg-emerald-500 border-2 border-white absolute -bottom-0.5 -right-0.5"></span>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+              SkyWings Support Bot
+              <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold border border-emerald-200">Online</span>
+            </h3>
+            <p class="text-[11px] text-slate-500 font-medium">Instant AI knowledge engine powered by SkyWings Airline API</p>
+          </div>
+        </div>
+
+        <button (click)="resetChat()"
+                type="button"
+                title="Restart Chat Session"
+                class="text-xs font-bold text-slate-500 hover:text-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100 transition-all flex items-center gap-1">
+          <span>🔄</span> Reset
+        </button>
+      </div>
+
+      <!-- Scrollable Messages Container -->
+      <div #chatScrollContainer class="flex-1 p-6 overflow-y-auto space-y-4 bg-[#F8FAFC]/50">
+        <div *ngFor="let msg of messages" class="flex flex-col" [ngClass]="msg.sender === 'user' ? 'items-end' : 'items-start'">
+          
+          <!-- Sender Label & Timestamp -->
+          <span class="text-[10px] font-bold text-slate-400 mb-1 px-1">
+            {{ msg.sender === 'user' ? 'You' : 'SkyWings Assistant' }} • {{ msg.timestamp | date:'shortTime' }}
+          </span>
+
+          <!-- Message Bubble -->
+          <div class="max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed whitespace-pre-line shadow-xs"
+               [ngClass]="msg.sender === 'user' 
+                 ? 'bg-blue-600 text-white rounded-tr-xs font-medium' 
+                 : 'bg-white border border-slate-200/90 text-slate-800 rounded-tl-xs'">
+            {{ msg.text }}
+
+            <!-- Direct Action Button in Bot Response -->
+            <div *ngIf="msg.actionLink" class="mt-3 pt-2.5 border-t border-slate-100">
+              <a [routerLink]="msg.actionLink" 
+                 class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] transition-all shadow-xs">
+                <span>{{ msg.actionLabel || 'Proceed to Action' }}</span>
+                <span>→</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Typing Indicator -->
+        <div *ngIf="isTyping" class="flex items-center gap-2 p-3 bg-white rounded-2xl border border-slate-200 w-fit">
+          <div class="w-2 h-2 rounded-full bg-blue-600 animate-bounce"></div>
+          <div class="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:0.2s]"></div>
+          <div class="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:0.4s]"></div>
+          <span class="text-[11px] font-semibold text-slate-400 ml-1">Assistant is searching knowledge base...</span>
+        </div>
+      </div>
+
+      <!-- Chat Input Field & Send Action -->
+      <div class="p-4 bg-white border-t border-slate-100">
+        <form (ngSubmit)="sendMessage()" class="flex items-center gap-2">
+          <input type="text"
+                 [(ngModel)]="currentQuery"
+                 name="userQuery"
+                 placeholder="Type your question about flights, meals, 8h cutoff, refunds..."
+                 class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white transition-all shadow-2xs">
+
+          <button type="submit"
+                  [disabled]="!currentQuery.trim() || isTyping"
+                  class="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-black transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/20">
+            <span>Send</span>
+            <span>➤</span>
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- RIGHT COLUMN: FAQ KNOWLEDGE BASE EXPLORER & TICKET (5 COLS) -->
+    <!-- ============================================================ -->
+    <div class="lg:col-span-5 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col h-[680px] overflow-hidden">
+      
+      <!-- Tabs Selector: Browse FAQs vs Submit Support Ticket -->
+      <div class="p-2 border-b border-slate-100 bg-slate-50 flex items-center gap-1.5">
+        <button (click)="rightTab = 'FAQ'"
+                type="button"
+                class="flex-1 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-1.5"
+                [ngClass]="rightTab === 'FAQ' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'">
+          <span>📚</span> Browse FAQs
+        </button>
+
+        <button (click)="rightTab = 'TICKET'"
+                type="button"
+                class="flex-1 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-1.5"
+                [ngClass]="rightTab === 'TICKET' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'">
+          <span>📝</span> Contact Support Desk
+        </button>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- TAB 1: FAQ KNOWLEDGE BASE ACCORDION                           -->
+      <!-- ============================================================ -->
+      <div *ngIf="rightTab === 'FAQ'" class="p-5 flex-1 flex flex-col min-h-0 space-y-4">
+        
+        <!-- Search FAQs Input -->
+        <div class="relative">
+          <input type="text"
+                 [(ngModel)]="faqSearchQuery"
+                 placeholder="Search FAQs by topic or keyword..."
+                 class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2 pl-9 pr-3 text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white transition-all shadow-2xs">
+          <span class="absolute left-3 top-2.5 text-xs text-slate-400">🔍</span>
+        </div>
+
+        <!-- Category Pills Filter -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] scrollbar-none">
+          <button (click)="activeCategory = 'ALL'"
+                  class="px-2.5 py-1 rounded-xl font-bold whitespace-nowrap transition-all"
+                  [ngClass]="activeCategory === 'ALL' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+            All
+          </button>
+          <button (click)="activeCategory = 'ROUND_TRIP'"
+                  class="px-2.5 py-1 rounded-xl font-bold whitespace-nowrap transition-all"
+                  [ngClass]="activeCategory === 'ROUND_TRIP' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+            Round-Trip
+          </button>
+          <button (click)="activeCategory = 'MULTI_CITY'"
+                  class="px-2.5 py-1 rounded-xl font-bold whitespace-nowrap transition-all"
+                  [ngClass]="activeCategory === 'MULTI_CITY' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+            Multi-City
+          </button>
+          <button (click)="activeCategory = 'MEALS'"
+                  class="px-2.5 py-1 rounded-xl font-bold whitespace-nowrap transition-all"
+                  [ngClass]="activeCategory === 'MEALS' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+            Dining & Meals
+          </button>
+          <button (click)="activeCategory = 'CUTOFF'"
+                  class="px-2.5 py-1 rounded-xl font-bold whitespace-nowrap transition-all"
+                  [ngClass]="activeCategory === 'CUTOFF' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+            8h Cutoff
+          </button>
+          <button (click)="activeCategory = 'CANCELLATION'"
+                  class="px-2.5 py-1 rounded-xl font-bold whitespace-nowrap transition-all"
+                  [ngClass]="activeCategory === 'CANCELLATION' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+            Refunds
+          </button>
+        </div>
+
+        <!-- Scrollable FAQ Accordion List -->
+        <div class="flex-1 overflow-y-auto space-y-2.5 pr-1">
+          <div *ngFor="let item of filteredFaqs" 
+               class="rounded-2xl border border-slate-200/90 overflow-hidden transition-all shadow-2xs">
+            
+            <!-- Accordion Header -->
+            <button (click)="item.isOpen = !item.isOpen"
+                    type="button"
+                    class="w-full p-3.5 bg-slate-50/60 hover:bg-slate-100/60 text-left flex items-start justify-between gap-3 transition-colors">
+              <div>
+                <span class="text-[9px] font-black uppercase text-blue-600 tracking-wider block mb-0.5">
+                  {{ item.categoryTitle }}
+                </span>
+                <h4 class="text-xs font-bold text-slate-800 leading-snug">{{ item.question }}</h4>
+              </div>
+              <span class="text-slate-400 font-bold text-sm shrink-0 transition-transform duration-200" [ngClass]="{'rotate-180': item.isOpen}">
+                ▼
+              </span>
+            </button>
+
+            <!-- Accordion Content -->
+            <div *ngIf="item.isOpen" class="p-3.5 bg-white text-xs text-slate-600 leading-relaxed whitespace-pre-line border-t border-slate-100 space-y-2">
+              <p>{{ item.answer }}</p>
+              
+              <div *ngIf="item.actionLink" class="pt-2">
+                <a [routerLink]="item.actionLink" class="text-blue-600 hover:underline font-bold text-[11px] flex items-center gap-1">
+                  <span>{{ item.actionLabel || 'Learn More' }}</span>
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+          <div *ngIf="filteredFaqs.length === 0" class="text-center py-10 space-y-2 text-slate-400 text-xs">
+            <span class="text-2xl block">🔍</span>
+            <p class="font-bold">No FAQ articles matching "{{ faqSearchQuery }}".</p>
+            <p>Try searching for "meals", "round-trip", "cutoff", or switch to the Contact Support Desk tab.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- TAB 2: SUBMIT SUPPORT TICKET (CONTACT HUMAN DESK)             -->
+      <!-- ============================================================ -->
+      <div *ngIf="rightTab === 'TICKET'" class="p-6 flex-1 overflow-y-auto space-y-4">
+        <div class="space-y-1">
+          <h4 class="text-sm font-black text-slate-900">Raise a Support Ticket</h4>
+          <p class="text-xs text-slate-500">Unanswered question or need booking assistance? Submit a ticket to our 24x7 desk.</p>
+        </div>
+
+        <form (ngSubmit)="submitTicket()" class="space-y-3.5 text-xs">
+          <!-- Full Name -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Full Name</label>
+            <input type="text" [(ngModel)]="ticketData.name" name="ticketName" required
+                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600">
+          </div>
+
+          <!-- Email Address -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Email Address (for response)</label>
+            <input type="email" [(ngModel)]="ticketData.email" name="ticketEmail" required
+                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <!-- Category -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Category</label>
+              <select [(ngModel)]="ticketData.category" name="ticketCategory"
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600">
+                <option value="FLIGHT_BOOKING">Flight Booking</option>
+                <option value="ROUND_TRIP">Round-Trip Flights</option>
+                <option value="MULTI_CITY">Multi-City Legs</option>
+                <option value="MEALS">Meals & Food</option>
+                <option value="CUTOFF">8h Cutoff Policy</option>
+                <option value="CANCELLATION">Cancellation & Refund</option>
+                <option value="PAYMENT">Payment & Invoices</option>
+                <option value="CHECKIN">Check-in & Boarding</option>
+                <option value="OTHER">Other Inquiry</option>
+              </select>
+            </div>
+
+            <!-- Priority -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Priority</label>
+              <select [(ngModel)]="ticketData.priority" name="ticketPriority"
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600">
+                <option value="NORMAL">Normal</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent (Departing Soon)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- PNR Reference (Optional) -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">PNR / Booking Reference (Optional)</label>
+            <input type="text" [(ngModel)]="ticketData.pnr" name="ticketPnr" placeholder="e.g. SKY-BK-9182"
+                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600 font-mono">
+          </div>
+
+          <!-- Subject -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Subject</label>
+            <input type="text" [(ngModel)]="ticketData.subject" name="ticketSubject" placeholder="Brief summary of inquiry" required
+                   class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600">
+          </div>
+
+          <!-- Description Message -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Message Description</label>
+            <textarea [(ngModel)]="ticketData.message" name="ticketMessage" rows="4" placeholder="Describe your question or requirement..." required
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 font-medium text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-600"></textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit"
+                  [disabled]="isSubmittingTicket"
+                  class="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2">
+            <span *ngIf="isSubmittingTicket" class="animate-spin text-sm">⏳</span>
+            <span>{{ isSubmittingTicket ? 'Submitting...' : 'Submit Support Ticket' }}</span>
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
