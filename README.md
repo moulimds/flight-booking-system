@@ -1,436 +1,305 @@
-# AirLink — Flight Booking System Frontend
+# ✈️ AirLink — Flight Booking System
 
-A modern, responsive **Angular frontend application** for the Flight Booking System, designed to provide a seamless experience for flight search, seat selection, booking management, payment, ticket access, and flight tracking.
+A full-stack flight booking platform built with **Angular, Spring Boot, and a microservices architecture**. AirLink brings together flight search, fare discovery, seat selection, booking, payments, ticket management, and flight tracking in one connected application.
 
-The frontend follows a component-based architecture using Angular, TypeScript, Angular Router, Reactive Forms, RxJS, and reusable UI components. It integrates with the backend microservices through HTTP APIs to support the complete flight-booking workflow.
+The goal is simple: make the flight booking journey smooth for users while keeping the underlying system modular, maintainable, and ready to evolve.
 
-## Project Overview
+<p align="center">
+  <a href="https://github.com/moulimds/flight-booking-system">
+    <strong>Explore the Repository</strong>
+  </a>
+</p>
 
-The AirLink frontend provides a unified interface for customers and administrators to interact with the Flight Booking System.
+---
 
-The application includes interfaces for:
+## ✨ About the Project
 
-- User authentication and registration
-- Flight search and filtering
-- Passenger information management
-- Interactive seat selection
-- Booking and payment workflows
-- Customer profile management
-- Digital boarding passes
-- Flight tracking
-- Administrative dashboards
-- Airport and fleet management
-- Customer support
-- Notifications and status updates
+AirLink is designed around two major parts:
 
-The frontend is organized into feature-specific components, shared UI elements, services, directives, pipes, route guards, and HTTP interceptors to support maintainability and code reuse.
+- **Frontend:** An Angular application that provides the user interface, manages user interactions, and communicates with backend APIs.
+- **Backend:** A collection of Spring Boot microservices that separate business responsibilities into focused services.
 
-## Architecture
+Infrastructure components such as an API Gateway, Eureka Service Registry, Config Server, and RabbitMQ support request routing, service discovery, centralized configuration, and asynchronous communication where configured.
 
-The frontend communicates with the backend through the API Gateway, which routes requests to the appropriate microservices.
+Keeping these responsibilities separate makes it easier to develop, test, maintain, and extend individual parts of the system.
 
-```text
-                  +----------------------+
-                  |      User / Admin    |
-                  +----------+-----------+
-                             |
-                             v
-                  +----------------------+
-                  |   Angular Frontend   |
-                  |    AirLink UI        |
-                  |     :4200            |
-                  +----------+-----------+
-                             |
-                             v
-                  +----------------------+
-                  |     API Gateway      |
-                  |       :8080          |
-                  +----------+-----------+
-                             |
-           +-----------------+------------------+
-           |                 |                  |
-           v                 v                  v
-     Auth Service      Flight Service     Booking Service
-           |                 |                  |
-           +-----------------+------------------+
-                             |
-                 +-----------+-----------+
-                 |                       |
-                 v                       v
-          +-------------+         +-------------+
-          |   Eureka    |         |   Config    |
-          |   :8761     |         |   :8888     |
-          +-------------+         +-------------+
+## 🧭 Application Flow Map
+
+The flow map below illustrates the user's journey through the application, from opening the website to managing a completed booking.
+
+```mermaid
+flowchart TD
+    A(["Start"]) --> B["Open AirLink"]
+    B --> C{"Logged in?"}
+
+    C -- "No" --> D["Register or Login"]
+    D --> E["Search Flights"]
+    C -- "Yes" --> E
+
+    E --> F["View Available Flights"]
+    F --> G["Choose Flight and Fare"]
+    G --> H["Check Seat Availability"]
+    H --> I["Select Seat"]
+    I --> J["Enter Passenger Details"]
+    J --> K["Submit Booking"]
+
+    K --> L{"Booking Accepted?"}
+    L -- "No" --> M["Show Error and Retry"]
+    M --> E
+
+    L -- "Yes" --> N["Proceed to Payment"]
+    N --> O{"Payment Successful?"}
+
+    O -- "No" --> P["Handle Payment Failure"]
+    P --> N
+
+    O -- "Yes" --> Q["Confirm Booking"]
+    Q --> R["Access Ticket"]
+    Q --> S["Access Invoice"]
+    Q --> T["Receive Notification"]
+
+    R --> U["Manage Booking"]
+    S --> U
+    T --> U
+
+    U --> V["Check-in When Available"]
+    U --> W["View Flight Tracking"]
+
+    V --> X(["Journey Complete"])
+    W --> X
 ```
 
-The Angular application handles presentation, user interaction, client-side validation, navigation, and API communication. Business rules, persistent data, authentication enforcement, and transaction processing remain responsibilities of the backend services.
+*This map represents the intended user journey. The exact sequence of booking confirmation, payment handling, ticket generation, and notifications depends on the implemented business logic.*
 
-## Frontend Features
+## 🏗️ System Architecture
 
-| No. | Feature | Responsibility |
-|---:|---|---|
-| 1 | Landing Page | Introduces the application and provides access to flight search |
-| 2 | Authentication | Login, registration, and authentication-related UI |
-| 3 | Flight Search | Search flights and display available results |
-| 4 | Flight Filtering | Filter results by airline, price, cabin class, and departure time |
-| 5 | Passenger Details | Collect and validate passenger information |
-| 6 | Seat Selection | Display cabin layouts and seat availability states |
-| 7 | Payment | Provide the checkout interface and display payment results |
-| 8 | Profile Management | Display and manage customer profile information |
-| 9 | Digital Boarding Pass | Present ticket and boarding-pass information |
-| 10 | Flight Tracking | Display flight status and tracking information |
-| 11 | Admin Dashboard | Present flight, booking, and revenue summaries |
-| 12 | Airport Console | Provide airport-related administrative interfaces |
-| 13 | Fleet Console | Provide fleet-management interfaces |
-| 14 | Customer Support | Display support-related functionality |
-| 15 | Shared Components | Reusable navigation, footer, sidebar, and toast notifications |
+AirLink follows a microservices-based architecture. The Angular frontend communicates with backend services through the API Gateway, while infrastructure components help coordinate configuration, discovery, and messaging.
 
-Feature availability and behavior depend on the implementation of the corresponding components and their backend integrations.
+```mermaid
+flowchart TB
+    USER(["User"]) --> FE["Angular Frontend"]
 
-## UI Design and Reference Implementations
+    subgraph FRONTEND["Presentation Layer"]
+        FE --> COMPONENTS["Pages and Components"]
+        COMPONENTS --> CLIENT["Angular Services and HTTP"]
+    end
 
-The frontend combines a modern travel-oriented interface with practical workflows for customers and administrators.
+    CLIENT --> GW["Spring Cloud API Gateway"]
 
-### 1. Flight Search Dashboard
+    subgraph SERVICES["Business Services"]
+        AUTH["Auth Service"]
+        FLIGHT["Flight Service"]
+        SEARCH["Search Service"]
+        FARE["Fare Service"]
+        BOOKING["Booking Service"]
+        SEAT["Seat Service"]
+        PAYMENT["Payment Service"]
+        CHECKIN["Check-in Service"]
+        PROFILE["Profile Service"]
+        TRACK["Flight Tracking Service"]
+        INVOICE["Invoice Service"]
+        NOTIFY["Notification Service"]
+    end
 
-**Component:** `src/app/features/flights/search-dashboard/`
+    GW --> AUTH
+    GW --> FLIGHT
+    GW --> SEARCH
+    GW --> FARE
+    GW --> BOOKING
+    GW --> SEAT
+    GW --> PAYMENT
+    GW --> CHECKIN
+    GW --> PROFILE
+    GW --> TRACK
+    GW --> INVOICE
+    GW --> NOTIFY
 
-The dashboard helps users discover and compare available flights.
+    EUREKA["Eureka Service Registry"] -. "Service discovery" .-> GW
+    CONFIG["Config Server"] -. "Centralized configuration" .-> GW
 
-Key UI elements include:
+    BOOKING --> DB[("MySQL")]
+    PAYMENT --> DB
+    FLIGHT --> DB
 
-- Flight search form
-- Origin and destination information
-- Flight result cards
-- Departure and arrival times
-- Fare and duration information
-- Cabin-class filters
-- Airline selection
-- Price-range filtering
-- Departure-time filters
-- Route information and aircraft details
+    BOOKING -. "Asynchronous messaging where configured" .-> MQ["RabbitMQ"]
+    MQ -.-> NOTIFY
+```
 
-### 2. Landing Page
+The diagram is a high-level representation. Actual database ownership, service routes, messaging relationships, and dependencies should follow the configuration in each service.
 
-**Component:** `src/app/features/landing/`
+## 💻 Technology Stack
 
-The landing page provides the application's primary entry point.
+| Layer | Technologies |
+|---|---|
+| Frontend | Angular, TypeScript, HTML5, CSS3 |
+| Frontend tooling | Node.js, npm |
+| Backend | Java, Spring Boot |
+| Microservices infrastructure | Spring Cloud |
+| API routing | Spring Cloud Gateway |
+| Service discovery | Netflix Eureka |
+| Centralized configuration | Spring Cloud Config |
+| Database | MySQL |
+| Messaging | RabbitMQ |
+| Build automation | Maven |
+| Containerization | Docker, Docker Compose |
+| Version control | Git, GitHub |
+| API testing | Postman or a compatible REST client |
 
-Design elements include:
+## 🧩 Backend Microservices
 
-- Travel-inspired hero section
-- Aircraft visuals and promotional content
-- Flight search interface
-- Origin, destination, and travel-date fields
-- Featured routes and popular destinations
-
-### 3. Seat Selection
-
-**Component:** `src/app/features/booking/seat-selection/`
-
-The seat-selection interface presents available seating options visually.
-
-Features include:
-
-- Aircraft cabin layout
-- Business and Economy cabin sections
-- Available, selected, and occupied seat states
-- Seat selection and details
-- Seat-related pricing information
-
-Seat availability and reservation rules are determined by the backend integration.
-
-### 4. Administrative Dashboard
-
-**Component:** `src/app/features/admin/admin-dashboard/`
-
-The dashboard provides a centralized view of administrative information.
-
-It is designed to present:
-
-- Flight and booking metrics
-- Revenue summaries
-- Weekly ticket-sales information
-- Airline statistics
-- Booking-management information
-
-### 5. Boarding Pass and Flight Tracking
-
-**Components:**
-
-- `src/app/features/ticket/boarding-pass/`
-- `src/app/features/tracking/flight-radar/`
-
-These interfaces provide access to ticket information and flight status.
-
-The boarding-pass interface can display flight details, seat information, passenger information, and boarding details when available. The tracking interface presents flight telemetry and route progression when supported by the connected data source.
-
-## Angular Architecture
-
-The frontend uses a feature-oriented, component-based structure.
-
-### Standalone Components
-
-Angular standalone components allow individual components to declare their dependencies through their own `imports` configuration.
-
-This approach reduces the need for NgModule-based component registration and supports a modular application structure.
-
-### Application Configuration
-
-The application configuration is organized around:
-
-- `app.config.ts` — Application providers and configuration
-- `app.routes.ts` — Route definitions and navigation
-- `app.component.ts` — Root application component
-
-The application may use Angular providers such as `provideRouter()` and `provideHttpClient()` according to its configuration.
-
-### Core Layer
-
-The `core/` directory organizes application-wide services and infrastructure, including:
-
-- Authentication and application services
-- Route guards
-- HTTP interceptors
-
-### Features Layer
-
-The `features/` directory contains the components associated with individual business workflows, such as authentication, booking, flight search, payment, profiles, ticketing, and administration.
-
-### Shared Layer
-
-The `shared/` directory contains reusable components, directives, and pipes used across multiple features.
-
-## Services and Dependency Injection
-
-Angular services separate API communication and reusable application logic from presentation components.
+Each service focuses on a particular responsibility instead of placing the entire application's business logic inside one large backend.
 
 | Service | Responsibility |
 |---|---|
-| `AuthService` | Authentication and current-user state |
-| `FlightService` | Flight search and fare-related requests |
-| `SeatService` | Seat information and reservation-related operations |
-| `BookingService` | Booking creation, retrieval, and cancellation |
-| `PaymentService` | Payment workflow and transaction references |
-| `TrackingService` | Flight-tracking data and periodic updates |
-| `ProfileService` | Customer profile and passport information |
-| `ToastService` | Application notifications and user feedback |
+| `api-gateway` | Routes incoming client requests to configured backend services |
+| `auth-service` | Authentication and access-related operations |
+| `flight-service` | Flight information and related operations |
+| `search-service` | Flight search functionality |
+| `fare-service` | Fare and pricing-related operations |
+| `booking-service` | Booking workflows and booking-related operations |
+| `seat-service` | Seat availability and seat-related operations |
+| `payment-service` | Payment-related operations |
+| `checkin-service` | Passenger check-in functionality |
+| `profile-service` | User profile management |
+| `flight-tracking-service` | Flight tracking information |
+| `invoice-service` | Invoice-related functionality |
+| `notification-service` | Notification-related operations |
+| `eureka-server` | Service registration and discovery |
+| `config-server` | Centralized application configuration |
 
-Services use Angular dependency injection to make shared functionality available to components and other services.
+The services can be developed and tested independently, subject to their API contracts, shared infrastructure, and runtime dependencies.
 
-The exact operations and API endpoints are defined by the implementation of each service.
+## 🎨 Frontend Experience
 
-## Templates, Directives, and Pipes
+The Angular frontend organizes the user experience into focused feature areas, with shared code reused wherever appropriate.
 
-### Custom Directives
+### Main Feature Areas
 
-| Directive | Purpose |
-|---|---|
-| `appSeatStatus` | Applies visual styling to seat-status states |
-| `appStatusBadge` | Provides consistent status-badge styling |
-| `appClickOutside` | Supports dismissing menus and overlays when clicking outside them |
+- **Authentication:** Login and registration.
+- **Flight Search:** Search interfaces and flight results.
+- **Booking:** Passenger details and booking workflows.
+- **Seat Selection:** Seat selection and availability filters.
+- **Payment:** Payment-related user interface.
+- **Profile:** User profile interfaces.
+- **Ticket and Invoice:** Access to booking documents.
+- **Flight Tracking:** Tracking-related interfaces.
+- **Check-in:** Check-in-related functionality.
+- **Support:** Support interface.
 
-### Custom Pipes
+### Angular Structure
 
-| Pipe | Purpose |
-|---|---|
-| `flightDuration` | Formats flight-duration values |
-| `airportName` | Converts airport codes into display labels using available mappings |
-| `currencyFormatter` | Formats currency values for display |
-| `flightFilter` | Supports filtering flight data according to configured criteria |
+The frontend uses feature-specific components and shared resources to keep the application organized.
 
-The shared directives and pipes help reduce duplicated template logic and maintain consistent presentation.
+- **Components:** Build pages and reusable interface elements.
+- **Services:** Encapsulate reusable logic and HTTP communication.
+- **Models:** Represent application data.
+- **Directives:** Provide reusable DOM behavior.
+- **Pipes:** Transform values for presentation.
+- **Environment configuration:** Holds environment-specific application settings.
 
-## Forms and Validation
+## 🔄 How the Services Work Together
 
-The application uses Angular forms to collect information and validate user input.
+### Request–Response Communication
 
-### Reactive Forms
+When a user performs an action, an Angular component calls the relevant service. That service sends an HTTP request to a configured backend endpoint. The API Gateway routes the request, the target microservice processes it, and the response is returned to the frontend.
 
-Reactive forms are suitable for structured forms that require explicit control over validation and form state.
+### Service Discovery
 
-They are used or intended for workflows such as:
+Eureka provides a registry through which configured services can register and discover other services.
 
-- Passenger details
-- Payment checkout
-- Customer profile management
+### Centralized Configuration
 
-Angular form utilities include `FormBuilder`, `FormGroup`, and `Validators`.
+The Config Server provides a common configuration source. Services may still require local bootstrap settings or service-specific configuration to initialize and connect successfully.
 
-### Template-Driven Forms
+### Asynchronous Messaging
 
-Template-driven forms use directives such as `ngModel` for form binding.
+RabbitMQ provides messaging infrastructure for asynchronous operations where the corresponding queues, exchanges, producers, and consumers are implemented.
 
-They can support simpler interactions, including flight-search inputs and filter controls, where configured in the relevant components.
+## 🗄️ Database and Infrastructure
 
-### Validation
+### MySQL
 
-Form validation may include:
+MySQL is the relational database technology used by the backend. Database names, schema setup, credentials, and connection URLs must match the configuration of the relevant services.
 
-- Required fields
-- Email format validation
-- Phone-number constraints
-- Passport information
-- Payment-field validation
-- Required passenger information
+### RabbitMQ
 
-Client-side validation improves the user experience, while the backend remains responsible for validating requests and enforcing business rules.
+RabbitMQ supports message-based communication where configured. Common default ports are:
 
-## Routing and Navigation
+- AMQP: `5672`
+- Management interface: `15672`
 
-The application uses Angular Router to navigate between feature pages.
+### Infrastructure Ports
 
-### Lazy Loading
+The following are the development ports previously used for this project. Verify the active configuration before running the application.
 
-The route configuration can use `loadComponent` to load standalone components when their routes are accessed.
+| Component | Port |
+|---|---:|
+| API Gateway | `8080` |
+| Config Server | `8888` |
+| Eureka Dashboard | `8761` |
+| Angular development server | `4200` |
+| RabbitMQ AMQP | `5672` |
+| RabbitMQ Management | `15672` |
 
-### Dynamic Routes
+MySQL's port depends on the local or Docker configuration. For example, a host mapping of `3307:3306` exposes container port `3306` on host port `3307`.
 
-Examples of route patterns include:
+## 🐳 Docker and Docker Compose
 
-- `/booking/seats/:id`
-- `/tickets/boarding-pass/:reference`
-- `/profile`
-- `/admin/dashboard`
+Docker helps package services into containers and run the application's infrastructure in a repeatable development environment.
 
-The exact paths depend on the application's route configuration.
+If the root Compose file defines the required services and build instructions, you can inspect the configuration and start the application using:
 
-### Route Guards
-
-- `authGuard` — Controls navigation to protected user pages.
-- `adminGuard` — Controls navigation to administrative pages based on configured permissions.
-
-Route guards control frontend navigation. Backend APIs must independently enforce authentication and authorization.
-
-## HTTP Communication and RxJS
-
-The frontend communicates with backend microservices through Angular's HTTP client.
-
-### HTTP Interceptors
-
-| Interceptor | Responsibility |
-|---|---|
-| `authInterceptor` | Adds the configured authentication token to eligible requests |
-| `errorInterceptor` | Centralizes HTTP error handling and can trigger user notifications |
-
-### RxJS
-
-RxJS supports asynchronous operations and reactive UI updates.
-
-The project references operators and utilities such as:
-
-- `map`
-- `tap`
-- `switchMap`
-- `catchError`
-- `startWith`
-- `filter`
-- `BehaviorSubject`
-- `interval`
-
-These can be used to transform API responses, handle errors, maintain reactive state, and periodically retrieve tracking information.
-
-## Technologies Used
-
-### Frontend
-
-| Technology | Purpose |
-|---|---|
-| Angular 17/18 target | Frontend framework |
-| TypeScript | Application logic and type safety |
-| HTML5 | Page structure |
-| CSS3 | Styling and responsive layouts |
-| Angular Router | Navigation and lazy loading |
-| Angular Forms | Form handling and validation |
-| Angular HttpClient | Backend API communication |
-| RxJS | Reactive programming and asynchronous operations |
-
-### Development Tools
-
-| Tool | Purpose |
-|---|---|
-| Node.js | JavaScript runtime for frontend tooling |
-| npm | Dependency management |
-| Angular CLI | Development server, builds, and project tooling |
-| Git | Version control |
-| GitHub | Source code hosting and collaboration |
-| VS Code | Frontend development environment |
-
-**Version note:** Confirm the installed Angular version in `package.json` before installing dependencies or using version-specific features.
-
-## Project Structure
-
-```text
-flight-booking-system/
-|
-+-- src/
-|   +-- app/
-|   |   +-- core/
-|   |   |   +-- guards/
-|   |   |   +-- interceptors/
-|   |   |   +-- services/
-|   |   |
-|   |   +-- features/
-|   |   |   +-- admin/
-|   |   |   |   +-- admin-dashboard/
-|   |   |   |   +-- airport-console/
-|   |   |   |   +-- fleet-console/
-|   |   |   |   +-- support-console/
-|   |   |   |
-|   |   |   +-- auth/
-|   |   |   |   +-- login/
-|   |   |   |   +-- register/
-|   |   |   |
-|   |   |   +-- booking/
-|   |   |   |   +-- passenger-details/
-|   |   |   |   +-- seat-selection/
-|   |   |   |
-|   |   |   +-- flights/
-|   |   |   |   +-- search-dashboard/
-|   |   |   |
-|   |   |   +-- landing/
-|   |   |   +-- payment/
-|   |   |   +-- profile/
-|   |   |   +-- support/
-|   |   |   +-- ticket/
-|   |   |   |   +-- boarding-pass/
-|   |   |   +-- tracking/
-|   |   |       +-- flight-radar/
-|   |   |
-|   |   +-- shared/
-|   |   |   +-- components/
-|   |   |   |   +-- footer/
-|   |   |   |   +-- navbar/
-|   |   |   |   +-- sidebar/
-|   |   |   |   +-- toast/
-|   |   |   +-- directives/
-|   |   |   +-- pipes/
-|   |   |
-|   |   +-- app.component.ts
-|   |   +-- app.config.ts
-|   |   +-- app.routes.ts
-|   |
-|   +-- assets/
-|   +-- environments/
-|
-+-- angular.json
-+-- package.json
-+-- tsconfig.json
-+-- README.md
+```bash
+docker compose config
+docker compose up -d --build
+docker compose ps
 ```
 
-This is a representative structure based on the documented features; optional files and nested directories may differ in the repository.
+To follow application logs:
 
-## Running the Frontend
+```bash
+docker compose logs -f
+```
+
+To inspect a particular service:
+
+```bash
+docker compose logs -f api-gateway
+```
+
+To stop the Compose environment:
+
+```bash
+docker compose down
+```
+
+These commands depend on the service names and definitions in the Compose file. Check the current configuration before running them.
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-Ensure the following tools are installed:
+Install the following tools before setting up the application:
 
-- Node.js compatible with the project's Angular version
-- npm
 - Git
-- Access to the required backend services for API integration
+- Java JDK compatible with the backend
+- Maven
+- Node.js and npm compatible with the Angular project
+- Docker Desktop and Docker Compose, if running containers
+- MySQL and RabbitMQ, locally or through containers
+- An IDE such as VS Code or Eclipse
+
+Check the installed versions:
+
+```bash
+git --version
+java -version
+mvn -version
+node -v
+npm -v
+docker --version
+docker compose version
+```
 
 ### 1. Clone the Repository
 
@@ -439,110 +308,156 @@ git clone https://github.com/moulimds/flight-booking-system.git
 cd flight-booking-system
 ```
 
-### 2. Navigate to the Frontend
+### 2. Install Frontend Dependencies
 
-Run the following command from the directory containing the Angular application's `package.json`:
-
-```bash
-cd frontend
-```
-
-If the Angular application is located at the repository root, remain in the root directory instead.
-
-### 3. Install Dependencies
+The Angular configuration and npm package files are located at the repository root.
 
 ```bash
 npm install
 ```
 
-### 4. Start the Development Server
-
-If the `package.json` contains an `npm start` script:
-
-```bash
-npm start
-```
-
-Alternatively, use Angular CLI:
+### 3. Run the Angular Frontend
 
 ```bash
 npx ng serve
 ```
 
-### 5. Open the Application
+Open the local address displayed in the terminal. The default Angular development address is usually:
 
-Visit:
+`http://localhost:4200`
 
-**http://localhost:4200**
+### 4. Configure the Backend
 
-The frontend requires the appropriate environment configuration and running backend services for integrated functionality.
+Before launching the backend services, verify that:
 
-## Backend Integration
+- MySQL is running and the required databases exist.
+- Database connection properties are correct.
+- RabbitMQ is available if a service depends on it.
+- Eureka is reachable by the services that register with it.
+- The Config Server can access the configured property sources.
+- Gateway routes match the target service names and paths.
+- Frontend API URLs point to the correct backend endpoint.
 
-The frontend is designed to communicate with the backend microservices through the API Gateway.
+Keep credentials and secrets out of version control.
 
-Typical interactions include:
+### 5. Build the Backend
 
-- Authentication and user management
-- Flight search and management
-- Fare retrieval
-- Seat availability
-- Booking creation and retrieval
-- Payment operations
-- Invoice and ticket information
-- Notifications
-- Customer profile management
-- Check-in
-- Flight tracking
+Build a service from its directory, where its `pom.xml` is located:
 
-API base URLs should be configured through the application's environment or deployment configuration.
+```bash
+mvn clean package
+```
 
-The frontend does not replace backend validation, authorization, database operations, or transaction processing.
+If the root `pom.xml` defines all backend services as Maven modules, you can instead build from the root:
 
-## API Testing
+```bash
+mvn clean package
+```
 
-Frontend integration can be tested alongside the backend APIs using Postman.
+Use the build configuration that matches the repository's actual Maven structure.
 
-Important workflows to verify include:
+### 6. Start the Services
 
-- Login and registration
-- Flight search
-- Flight selection
-- Seat selection
-- Passenger details
-- Booking creation
-- Payment outcomes
-- Ticket and invoice retrieval
-- Profile management
-- Check-in
-- Flight tracking
+A typical startup sequence is:
 
-Testing should cover successful requests, invalid inputs, expired sessions, unavailable services, and server-side errors.
+1. MySQL and RabbitMQ.
+2. Eureka Server.
+3. Config Server.
+4. Backend business services.
+5. API Gateway.
+6. Angular frontend.
 
-## Key Features
+The exact order depends on the configured health checks, service dependencies, retry behavior, and Compose setup.
 
-- Angular component-based architecture
-- Feature-oriented project organization
-- Reusable shared UI components
-- Responsive travel-oriented interface
-- Flight search and filtering
-- Passenger forms and validation
-- Interactive seat-selection interface
-- Payment and booking workflows
-- Customer profile management
-- Digital boarding-pass presentation
-- Flight-tracking interface
-- Administrative dashboards
-- Custom directives and pipes
-- Angular Router and lazy loading
-- Route guards and HTTP interceptors
-- RxJS-based asynchronous operations
-- Integration with backend microservices
+## 🧪 API Testing
 
-## Conclusion
+Postman or another REST client can be used to test the backend endpoints.
 
-The AirLink frontend brings the user-facing side of the Flight Booking System together through a structured Angular application.
+When testing through the API Gateway, use the gateway's base URL and the route prefixes configured in the application. A commonly used local base URL is:
 
-By combining reusable components, feature-oriented organization, form validation, routing, reactive programming, and backend API integration, the frontend provides a foundation for a maintainable and intuitive flight-booking experience.
+`http://localhost:8080`
 
-**Built with Angular and TypeScript, with a focus on clean UI design, modular development, and seamless travel workflows.**
+Recommended testing areas include authentication, flight search, fares, seat availability, bookings, payments, check-in, profiles, invoices, tickets, notifications, and flight tracking.
+
+Refer to each service's controllers, DTOs, validation rules, and gateway configuration for the actual HTTP methods, endpoint paths, request payloads, and authorization requirements.
+
+## 📁 Repository Structure
+
+The repository combines the Angular frontend with the Spring Boot backend service modules.
+
+```text
+flight-booking-system/
+├── api-gateway/
+├── auth-service/
+├── booking-service/
+├── checkin-service/
+├── config-server/
+├── eureka-server/
+├── fare-service/
+├── flight-service/
+├── flight-tracking-service/
+├── invoice-service/
+├── notification-service/
+├── payment-service/
+├── profile-service/
+├── search-service/
+├── seat-service/
+├── src/
+│   └── app/
+│       ├── core/
+│       ├── features/
+│       ├── shared/
+│       └── ...
+├── angular.json
+├── package.json
+├── package-lock.json
+├── pom.xml
+├── tsconfig.app.json
+├── tsconfig.json
+└── README.md
+```
+
+The structure above is a simplified overview. The exact contents of individual folders depend on the current repository state.
+
+## 👥 Team Contributions
+
+The following table reflects the previously defined service allocation.
+
+| Team Member | Assigned Areas |
+|---|---|
+| Mouli | Configuration, Invoice, Payment, CI/CD |
+| Sindhu | Booking, Fare, JUnit5, Mockito  |
+| Ashad | Seat, Notification, API Gateway, Eureka |
+| Gokul | Flight, Search, Profile |
+| Abinesh | Authentication, Check-in, Flight Tracking |
+
+Integration, testing, frontend work, and repository maintenance may involve collaboration across the team.
+
+## 🔮 Future Improvements
+
+AirLink can be extended further through:
+
+- Automated unit and integration testing.
+- Continuous integration and delivery with GitHub Actions.
+- API documentation using OpenAPI/Swagger.
+- Centralized logs, monitoring, and distributed tracing.
+- Improved error handling and request validation.
+- More robust authentication and authorization.
+- Secure secrets management.
+- Automated Docker builds and deployment.
+- End-to-end testing of booking, seat reservation, and payment workflows.
+- Accessibility and responsive-design improvements.
+
+## 📌 Project Status
+
+The Angular frontend and backend service modules have been brought together in the repository's `main` branch.
+
+The frontend integration has been committed and pushed to GitHub. Successful builds, complete end-to-end workflows, and production deployment should be verified separately before describing the application as release-ready.
+
+## 🔗 Repository
+
+**GitHub:** [moulimds/flight-booking-system](https://github.com/moulimds/flight-booking-system)
+
+---
+
+*Built collaboratively with a focus on modular architecture, maintainable code, and a smoother flight booking experience.*
