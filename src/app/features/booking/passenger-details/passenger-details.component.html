@@ -1,0 +1,434 @@
+<div class="min-h-screen bg-slate-50 text-slate-800 p-6 md:p-10">
+  <div class="max-w-6xl mx-auto space-y-8">
+
+    <!-- Header Navigation -->
+    <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200">
+      <div>
+        <a routerLink="/flights/dashboard" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 mb-2">
+          <span>←</span> Back to Flights
+        </a>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Passenger Details & Class Selection</h1>
+        <p class="text-sm text-slate-500 mt-1">Book up to 5 passengers with individual mixed travel classes and seats.</p>
+      </div>
+
+      <!-- Passenger Count Badge -->
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Passengers:</span>
+        <div class="px-4 py-2 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-black flex items-center gap-2">
+          <span>👥</span> {{ passengersArray.length }} / 5
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- LEFT COLUMN: REACTIVE MULTI-PASSENGER FORM -->
+      <div class="lg:col-span-8 space-y-6">
+        <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="space-y-6">
+
+          <!-- Primary Contact Details Card -->
+          <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+            <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+              <span>📧</span> Primary Contact Information
+            </h3>
+            <p class="text-xs text-slate-500">All e-tickets, PNR confirmation, and live flight updates will be dispatched to these coordinates.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Email Address *</label>
+                <input type="email" formControlName="contactEmail"
+                       class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-300 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500"
+                       placeholder="name@example.com">
+                <span *ngIf="isInvalid('contactEmail', '')" class="text-[11px] font-bold text-rose-600 mt-1 block">
+                  Valid email address is required.
+                </span>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Mobile Phone Number *</label>
+                <input type="tel" formControlName="contactPhone"
+                       class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-300 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500"
+                       placeholder="+91 98765 43210">
+                <span *ngIf="isInvalid('contactPhone', '')" class="text-[11px] font-bold text-rose-600 mt-1 block">
+                  Phone number is required.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PASSENGERS ARRAY CONTAINER -->
+          <div formArrayName="passengers" class="space-y-6">
+            <div *ngFor="let pGroup of passengersArray.controls; let i = index" [formGroupName]="i"
+                 class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-5 transition-all">
+              
+              <!-- Passenger Card Header -->
+              <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 font-black text-xs flex items-center justify-center">
+                    #{{ i + 1 }}
+                  </span>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h4 class="text-base font-black text-slate-900">Passenger {{ i + 1 }}</h4>
+                      <span *ngIf="pGroup.get('passengerType')?.value === 'ADULT'" class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Adult (12+ yrs)</span>
+                      <span *ngIf="pGroup.get('passengerType')?.value === 'CHILD'" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">Child (2–11 yrs)</span>
+                      <span *ngIf="pGroup.get('passengerType')?.value === 'INFANT'" class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">Infant (< 2 yrs)</span>
+                    </div>
+                    <span class="text-xs text-slate-500">Enter passport / photo ID name</span>
+                  </div>
+                </div>
+
+                <!-- Delete Passenger Button -->
+                <button *ngIf="passengersArray.length > 1" type="button" (click)="removePassenger(i)"
+                        class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all">
+                  ✕ Remove
+                </button>
+              </div>
+
+              <!-- Full Name Input -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Full Name (as per ID) *</label>
+                <input type="text" formControlName="fullName"
+                       class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-300 text-sm font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500"
+                       placeholder="e.g. Gokul Kumar">
+                <span *ngIf="isPassengerInvalid(i, 'fullName')" class="text-[11px] font-bold text-rose-600 mt-1 block">
+                  Full name is required (min 3 chars).
+                </span>
+              </div>
+
+              <!-- Grid: Category, DOB, Age, Gender -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Passenger Category *</label>
+                  <select formControlName="passengerType"
+                          class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-300 text-sm font-bold text-blue-700 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                    <option value="ADULT">Adult (12+ yrs)</option>
+                    <option value="CHILD">Child (2–11 yrs)</option>
+                    <option value="INFANT">Infant (Under 2 yrs)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Date of Birth *</label>
+                  <input type="date" formControlName="dateOfBirth"
+                         class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-300 text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Calculated Age</label>
+                  <div class="px-4 py-3 rounded-2xl bg-slate-100 border border-slate-200 text-sm font-black text-blue-700">
+                    {{ pGroup.get('age')?.value || 0 }} year{{ (pGroup.get('age')?.value || 0) === 1 ? '' : 's' }}
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Gender *</label>
+                  <select formControlName="gender"
+                          class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-300 text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Travel Class & Seat Selection Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Travel Class *</label>
+                  <select formControlName="travelClass"
+                          class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-300 text-sm font-bold text-blue-700 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                    <option value="ECONOMY">Economy Class</option>
+                    <option value="PREMIUM_ECONOMY">Premium Economy Class</option>
+                    <option value="BUSINESS">Business Class</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    {{ tripLegs.length > 1 ? 'Leg 1 / Primary Seat *' : 'Assigned Seat *' }}
+                  </label>
+                  <input type="text" formControlName="seatNumber"
+                         class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-300 text-sm font-bold text-slate-900 uppercase focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500"
+                         placeholder="e.g. 2A, 18C">
+                </div>
+              </div>
+
+              <!-- Multi-Leg Seats Badge -->
+              <div *ngIf="tripLegs.length > 1 && passengersRawData[i]?.legSeats" class="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200 text-xs space-y-1.5">
+                <span class="text-[11px] font-bold text-blue-800 block uppercase tracking-wider">Reserved Leg Seats for this Passenger:</span>
+                <div class="flex flex-wrap gap-2 pt-0.5">
+                  <span *ngFor="let leg of tripLegs; let lIdx = index" class="px-2.5 py-1 rounded-xl bg-white border border-slate-200 text-slate-700 font-medium shadow-xs">
+                    <span class="text-slate-500">{{ lIdx === 0 && tripType === 'ROUND_TRIP' ? '🛫 Outbound' : (lIdx === 1 && tripType === 'ROUND_TRIP' ? '🛬 Return' : 'Leg ' + (lIdx + 1)) }}:</span>
+                    <strong class="text-emerald-700 ml-1">{{ passengersRawData[i]?.legSeats?.[lIdx] || pGroup.get('seatNumber')?.value }}</strong>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Passenger Fare Badge -->
+              <div class="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+                <span class="text-slate-600 font-medium">Passenger {{ i + 1 }} Fare ({{ pGroup.get('travelClass')?.value }}):</span>
+                <span class="font-black text-emerald-700">{{ (pGroup.get('fareAmount')?.value || 5000) | currencyFormatter }}</span>
+              </div>
+
+              <!-- IN-FLIGHT MEALS & DIETARY PREFERENCE SECTION -->
+              <div class="pt-4 border-t border-slate-100 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h5 class="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                      <span>🍽️</span> In-Flight Meal & Dining Preference (Passenger #{{ i + 1 }})
+                    </h5>
+                    <p class="text-[11px] text-slate-500">
+                      Aircraft-catered meal for {{ pGroup.get('fullName')?.value || 'Passenger ' + (i + 1) }}.
+                    </p>
+                  </div>
+                  
+                  <!-- Currently Selected Meal Pill -->
+                  <div class="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl">
+                    <span class="text-[10px] font-bold text-amber-800 uppercase">Selected:</span>
+                    <span class="text-xs font-black text-amber-950 flex items-center gap-1">
+                      <span>{{ getDietaryIcon(getPassengerMeal(0, i)?.category) }}</span>
+                      <span>{{ getPassengerMeal(0, i)?.name || 'Vegetarian Royal Thali' }}</span>
+                    </span>
+                    <span *ngIf="getPassengerMeal(0, i)?.complimentary || getPassengerMeal(0, i)?.price === 0" 
+                          class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase ml-1">
+                      FREE
+                    </span>
+                    <span *ngIf="!getPassengerMeal(0, i)?.complimentary && (getPassengerMeal(0, i)?.price || 0) > 0"
+                          class="px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-black font-mono ml-1">
+                      +₹{{ getPassengerMeal(0, i)?.price }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Meals Selection Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
+                  <div *ngFor="let meal of availableMeals"
+                       (click)="selectMeal(0, i, meal)"
+                       class="p-3 rounded-2xl border text-left cursor-pointer transition-all relative flex flex-col justify-between"
+                       [ngClass]="getPassengerMeal(0, i)?.id === meal.id 
+                                  ? 'bg-blue-50/90 border-blue-500 ring-2 ring-blue-500/20 shadow-xs' 
+                                  : 'bg-slate-50/80 hover:bg-slate-100/90 border-slate-200'">
+                    
+                    <div>
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide flex items-center gap-1"
+                              [ngClass]="getDietaryBadgeClass(meal.category)">
+                          <span>{{ getDietaryIcon(meal.category) }}</span>
+                          <span>{{ meal.category || 'MEAL' }}</span>
+                        </span>
+
+                        <span *ngIf="meal.complimentary || meal.price === 0" 
+                              class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black">
+                          FREE
+                        </span>
+                        <span *ngIf="!meal.complimentary && meal.price > 0" 
+                              class="text-xs font-black text-slate-900 font-mono">
+                          +₹{{ meal.price }}
+                        </span>
+                      </div>
+
+                      <div class="text-xs font-black text-slate-900 leading-snug">{{ meal.name }}</div>
+                      <p class="text-[10px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ meal.description }}</p>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 mt-2 border-t border-slate-200/60">
+                      <span class="text-[10px] font-bold"
+                            [ngClass]="getPassengerMeal(0, i)?.id === meal.id ? 'text-blue-700' : 'text-slate-400'">
+                        {{ getPassengerMeal(0, i)?.id === meal.id ? '✓ Selected' : 'Click to Select' }}
+                      </span>
+
+                      <button type="button" 
+                              (click)="$event.stopPropagation(); applyMealToAllPassengers(0, meal)"
+                              title="Apply this meal to all passengers"
+                              class="text-[9px] font-bold text-blue-600 hover:text-blue-800 hover:underline">
+                        Apply to All
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Multi-Leg Segment Meal tabs if Trip is Multi-City or Round-Trip -->
+                <div *ngIf="tripLegs && tripLegs.length > 1" class="pt-3 border-t border-dashed border-slate-200 space-y-3">
+                  <div class="text-xs font-black text-indigo-900 flex items-center gap-1.5">
+                    <span>🔄</span> Return / Additional Flight Legs Meals:
+                  </div>
+                  
+                  <div *ngFor="let leg of tripLegs; let legIdx = index" class="p-3 rounded-2xl bg-indigo-50/50 border border-indigo-200/60 space-y-2">
+                    <div class="flex items-center justify-between text-xs font-bold text-indigo-950">
+                      <span>Leg {{ legIdx + 1 }}: {{ leg.flightNumber }} ({{ leg.route }})</span>
+                      <span class="text-[10px] font-mono text-indigo-700">
+                        Chosen: {{ getPassengerMeal(legIdx, i)?.name || 'Default Meal' }}
+                      </span>
+                    </div>
+
+                    <div class="flex flex-wrap gap-1.5">
+                      <button *ngFor="let m of availableMeals" type="button"
+                              (click)="selectMeal(legIdx, i, m)"
+                              class="px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all"
+                              [ngClass]="getPassengerMeal(legIdx, i)?.id === m.id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'">
+                        {{ getDietaryIcon(m.category) }} {{ m.name }} ({{ m.complimentary ? 'Free' : ('+₹' + m.price) }})
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Add Passenger Action Button -->
+          <div *ngIf="passengersArray.length < 5" class="pt-2">
+            <button type="button" (click)="addNewPassenger()"
+                    class="w-full py-3.5 rounded-2xl border-2 border-dashed border-slate-300 hover:border-blue-500 text-slate-600 hover:text-blue-600 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all bg-white hover:bg-blue-50/40">
+              <span>➕</span> Add Another Passenger (Up to 5)
+            </button>
+          </div>
+
+          <!-- Submit Bar -->
+          <div class="pt-6 border-t border-slate-200 flex items-center justify-between">
+            <button type="button" routerLink="/flights/dashboard" class="px-6 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all">
+              Cancel
+            </button>
+            <button type="submit" [disabled]="bookingForm.invalid || isSubmitting"
+                    class="px-8 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-black uppercase tracking-wider shadow-lg shadow-blue-600/20 disabled:opacity-50 transition-all transform active:scale-[0.98]">
+              <span *ngIf="!isSubmitting">
+                {{ tripLegs.length > 1 ? 'Confirm & Book Trip (' + totalTripTicketsCount + ' Tickets) →' : 'Proceed to Payment (' + (grandTotalAmount | currencyFormatter) + ') →' }}
+              </span>
+              <span *ngIf="isSubmitting">Creating Reservations & Issuing Tickets...</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- RIGHT COLUMN: FLIGHT & COMBINED FARE SUMMARY -->
+      <div class="lg:col-span-4 bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5 sticky top-8">
+        <h3 class="text-base font-black text-slate-900 flex items-center gap-2 border-b border-slate-200 pb-4">
+          <span>✈️</span> Flight Summary
+        </h3>
+
+        <!-- Multi-Leg Flight Summary -->
+        <div *ngIf="tripLegs.length > 1" class="space-y-3 pb-4 border-b border-slate-200">
+          <div class="text-xs font-black uppercase tracking-wider text-blue-600 flex items-center gap-1.5">
+            <span>{{ tripType === 'ROUND_TRIP' ? '🔄' : '🗺️' }}</span>
+            <span>{{ tripType === 'ROUND_TRIP' ? 'Round Trip Flights (2 Legs)' : 'Multi-City Flights (' + tripLegs.length + ' Legs)' }}</span>
+          </div>
+
+          <div *ngFor="let leg of tripLegs; let lIdx = index" class="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-1.5 text-xs">
+            <div class="flex justify-between items-center font-bold text-blue-700">
+              <span>{{ lIdx === 0 && tripType === 'ROUND_TRIP' ? '🛫 Outbound' : (lIdx === 1 && tripType === 'ROUND_TRIP' ? '🛬 Return' : 'Leg ' + (lIdx + 1)) }}</span>
+              <span class="px-2 py-0.5 rounded-lg bg-blue-100 text-blue-800 border border-blue-200 text-[10px]">{{ leg.flightNumber }}</span>
+            </div>
+            <div class="font-black text-slate-900 text-sm">{{ leg.route }}</div>
+            <div class="text-[11px] text-slate-500 flex items-center justify-between pt-0.5">
+              <span>📅 {{ leg.departureDate || 'Scheduled' }}</span>
+              <span>⏰ {{ leg.departureTime || '10:00 AM' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Single Flight Summary -->
+        <div *ngIf="tripLegs.length <= 1 && flight" class="space-y-3 pb-4 border-b border-slate-200">
+          <div class="flex justify-between items-center text-xs font-bold text-blue-600">
+            <span>{{ flight.airline || 'SkyWings Airline' }}</span>
+            <span class="px-2 py-0.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-700">{{ flight.flightNumber }}</span>
+          </div>
+
+          <div class="text-lg font-black text-slate-900">
+            {{ flight.source || flight.origin || 'DEL' }} → {{ flight.destination || 'BOM' }}
+          </div>
+
+          <div class="text-xs text-slate-500 flex items-center gap-4">
+            <div>📅 {{ flight.departureDate || 'Tomorrow' }}</div>
+            <div>⏰ {{ flight.departureTime || '10:00 AM' }}</div>
+          </div>
+        </div>
+
+        <!-- Passenger Breakdown -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-black uppercase tracking-wider text-slate-500">Passenger Breakdown ({{ passengersArray.length }})</h4>
+          
+          <div *ngFor="let pGroup of passengersArray.controls; let i = index" 
+               class="py-2.5 border-b border-slate-100 text-xs space-y-1">
+            <div class="flex items-center justify-between">
+              <div class="font-bold text-slate-800">
+                #{{ i + 1 }} {{ pGroup.get('fullName')?.value || 'Passenger ' + (i + 1) }}
+              </div>
+              <div class="font-black text-emerald-700">
+                {{ (pGroup.get('fareAmount')?.value || 5000) | currencyFormatter }}
+              </div>
+            </div>
+
+            <div class="text-[11px] text-slate-500">
+              Class: <span class="text-blue-600 font-bold">{{ pGroup.get('travelClass')?.value }}</span>
+            </div>
+
+            <!-- Meal Picked per passenger in sidebar -->
+            <div class="flex items-center justify-between text-[11px] bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">
+              <span class="text-slate-600 font-medium">Meal:</span>
+              <span class="font-bold text-amber-900">
+                {{ getPassengerMeal(0, i)?.name || 'Vegetarian Royal Thali' }}
+                <span *ngIf="!getPassengerMeal(0, i)?.complimentary && (getPassengerMeal(0, i)?.price || 0) > 0" class="text-emerald-700 ml-1">
+                  (+₹{{ getPassengerMeal(0, i)?.price }})
+                </span>
+                <span *ngIf="getPassengerMeal(0, i)?.complimentary || getPassengerMeal(0, i)?.price === 0" class="text-slate-400 ml-1">
+                  (Free)
+                </span>
+              </span>
+            </div>
+
+            <!-- Multi-Leg Seats In Breakdown -->
+            <div *ngIf="tripLegs.length > 1 && passengersRawData[i]?.legSeats" class="flex flex-wrap gap-2 text-[10px] text-slate-600 pt-0.5">
+              <span *ngFor="let leg of tripLegs; let lIdx = index" class="px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200">
+                {{ lIdx === 0 && tripType === 'ROUND_TRIP' ? 'Outbound' : (lIdx === 1 && tripType === 'ROUND_TRIP' ? 'Return' : 'Leg ' + (lIdx + 1)) }}:
+                <strong class="text-emerald-700">{{ passengersRawData[i]?.legSeats?.[lIdx] || pGroup.get('seatNumber')?.value }}</strong>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Combined Total Calculation -->
+        <div class="pt-4 border-t border-slate-200 space-y-2">
+          <div *ngIf="tripLegs.length > 1" class="flex justify-between text-xs text-blue-600">
+            <span>Trip Type</span>
+            <span class="font-bold">{{ tripType === 'ROUND_TRIP' ? 'Round Trip (2 Tickets / Pax)' : 'Multi-City (' + tripLegs.length + ' Tickets / Pax)' }}</span>
+          </div>
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>Total Tickets</span>
+            <span class="text-slate-900 font-bold">{{ totalTripTicketsCount }} Tickets</span>
+          </div>
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>Base Passenger Fares</span>
+            <span class="text-slate-700 font-bold">{{ totalCombinedTripFare | currencyFormatter }}</span>
+          </div>
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>In-Flight Dining & Meals</span>
+            <span class="font-bold text-amber-800">
+              {{ totalMealsAmount === 0 ? 'Complimentary (₹0)' : ('+' + (totalMealsAmount | currencyFormatter)) }}
+            </span>
+          </div>
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>Taxes & Airline Surcharges</span>
+            <span class="text-emerald-700 font-bold">Included</span>
+          </div>
+          <div class="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-200">
+            <span>Total Payable Amount</span>
+            <span class="text-2xl text-blue-600 font-black">{{ grandTotalAmount | currencyFormatter }}</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl text-[11px] text-blue-900 space-y-1">
+          <div class="font-bold flex items-center gap-1.5 text-blue-800">
+            <span>🛡️</span> Exact Refund Guarantee
+          </div>
+          <p class="text-blue-800/80 leading-relaxed">
+            Cancellation ≥24h before departure qualifies for 75% refund. 5h–24h qualifies for 30% refund.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
