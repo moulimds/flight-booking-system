@@ -1,0 +1,890 @@
+<div class="min-h-screen bg-slate-50 text-slate-800 p-6 md:p-10">
+  <div class="max-w-6xl mx-auto space-y-8">
+    
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200">
+      <div>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">My Bookings & E-Tickets</h1>
+        <p class="text-sm text-slate-500 mt-1">Manage flight bookings, view passenger boarding passes, and request cancellations.</p>
+      </div>
+
+      <a routerLink="/flights/dashboard" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/20 transition-all">
+        ✈ Book New Flight
+      </a>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-20">
+      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+      <p class="text-xs text-slate-500 mt-3 font-bold">Loading your reservations...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && bookings.length === 0" class="text-center py-20 bg-white border border-slate-300 rounded-2xl p-8 space-y-4 shadow-sm">
+      <div class="text-5xl">✈️</div>
+      <h3 class="text-xl font-black text-slate-900">No Bookings Found</h3>
+      <p class="text-xs text-slate-500 max-w-md mx-auto">You haven't booked any flights yet. Explore destinations and book with instant seat holds and e-ticket generation.</p>
+      <a routerLink="/flights/dashboard" class="inline-block px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-blue-600/20">
+        Search Flights Now
+      </a>
+    </div>
+
+    <!-- BOOKINGS LIST -->
+    <div *ngIf="!isLoading && bookings.length > 0" class="space-y-6">
+      <div *ngFor="let b of bookings" 
+           class="booking-card bg-white border border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm hover:border-slate-400 hover:shadow transition-all space-y-6">
+        
+        <!-- Top Bar: Reference, Date, Status -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200/80 text-blue-600 font-black flex items-center justify-center">
+              ✈
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Booking Reference (PNR)</span>
+                <!-- Rescheduled Pill Badge -->
+                <span *ngIf="b.isRescheduled" 
+                      class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300 shadow-xs">
+                  <span>🔄</span> Rescheduled
+                </span>
+              </div>
+              <div class="text-xl font-black text-slate-900 tracking-wide font-mono">{{ b.bookingReference }}</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Prominent Rescheduled Tag -->
+            <span *ngIf="b.isRescheduled" 
+                  class="px-3.5 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider bg-amber-500/15 text-amber-800 border border-amber-300 flex items-center gap-1.5 shadow-sm">
+              <span>🔄</span> RESCHEDULED
+            </span>
+            <!-- Booking Status Badge -->
+            <span [appStatusBadge]="b.bookingStatus" class="px-3.5 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider">{{ b.bookingStatus }}</span>
+            <!-- Payment Status Badge -->
+            <span [appStatusBadge]="b.paymentStatus" class="px-3.5 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider">{{ b.paymentStatus }}</span>
+          </div>
+        </div>
+
+        <!-- Route & Timing Info -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+          <div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200">
+            <span class="text-slate-400 block font-bold text-[11px] uppercase tracking-wider">Flight</span>
+            <span class="text-sm font-black text-slate-900 mt-0.5 block">{{ b.flightNumber || 'FL-' + b.flightId }}</span>
+          </div>
+          <div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200">
+            <span class="text-slate-400 block font-bold text-[11px] uppercase tracking-wider">Route</span>
+            <span class="text-sm font-black text-blue-600 mt-0.5 block">{{ b.source || 'DEL' }} → {{ b.destination || 'BOM' }}</span>
+          </div>
+          <div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200">
+            <span class="text-slate-400 block font-bold text-[11px] uppercase tracking-wider">Departure Date</span>
+            <span class="text-sm font-black text-slate-900 mt-0.5 block">{{ b.departureDate || (b.createdAt | date:'mediumDate') }}</span>
+          </div>
+          <div class="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200">
+            <span class="text-emerald-700 block font-bold text-[11px] uppercase tracking-wider">Total Fare Paid</span>
+            <span class="text-sm font-black text-emerald-700 mt-0.5 block">{{ b.fareAmount | currencyFormatter }}</span>
+          </div>
+        </div>
+
+        <!-- PASSENGERS LIST IN THIS BOOKING (E-TICKETS) -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <h4 class="text-xs font-black uppercase tracking-wider text-slate-500">
+                Passengers on this PNR ({{ b.passengers?.length || 1 }})
+              </h4>
+              <!-- E-Tickets Rescheduled Label -->
+              <span *ngIf="b.isRescheduled" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-black uppercase tracking-wider shadow-xs">
+                <span>🔄</span> Rescheduled E-Tickets
+              </span>
+            </div>
+            <span class="text-[11px] text-slate-400 font-semibold">Individual E-Tickets</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div *ngFor="let p of b.passengers; let idx = index" 
+                 class="passenger-card p-4 rounded-xl border text-xs space-y-2.5 hover:bg-white hover:shadow-sm transition-all"
+                 [ngClass]="b.isRescheduled ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200 bg-slate-50/70'">
+              <div class="flex items-center justify-between font-bold">
+                <span class="text-slate-900 font-extrabold">#{{ idx + 1 }} {{ p.fullName }}</span>
+                <div class="flex items-center gap-1.5">
+                  <span *ngIf="b.isRescheduled" class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200 font-black text-[9px] uppercase tracking-wider">
+                    🔄 Rescheduled
+                  </span>
+                  <span class="px-2 py-0.5 rounded-lg bg-purple-50 text-purple-700 border border-purple-200 font-black text-[10px] tracking-wide">
+                    {{ p.travelClass }}
+                  </span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between text-slate-500 text-[11px] pt-2 border-t border-slate-200">
+                <span>Seat: <strong class="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-lg border border-emerald-200">{{ p.seatNumber }}</strong></span>
+                <span class="font-mono">Tkt: <strong class="text-blue-700 font-bold">{{ p.ticketNumber || ('TKT-' + b.bookingReference + '-0' + (idx + 1)) }}</strong></span>
+              </div>
+              <div *ngIf="p.mealName" class="flex items-center justify-between text-[10px] font-bold text-amber-900 bg-amber-50 px-2 py-1 rounded-lg border border-amber-200">
+                <span class="flex items-center gap-1">
+                  <span>🍱</span>
+                  <span>{{ p.mealName }}</span>
+                </span>
+                <span *ngIf="p.mealPrice && p.mealPrice > 0" class="text-emerald-700 font-mono">+₹{{ p.mealPrice }}</span>
+                <span *ngIf="!p.mealPrice || p.mealPrice === 0" class="text-slate-400">Free</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CANCELLATION STATUS CARD (If cancellation was processed or requested) -->
+        <div *ngIf="b.cancellationStatus && b.cancellationStatus !== 'NONE'" 
+             [ngClass]="b.bookingStatus === 'CANCELLED' || b.paymentStatus === 'REFUNDED' ? 'bg-emerald-50/60 border-emerald-200' : 'bg-amber-50/50 border-amber-200'"
+             class="p-5 rounded-2xl border space-y-4">
+          
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-black uppercase tracking-wider flex items-center gap-2"
+                [ngClass]="b.bookingStatus === 'CANCELLED' || b.paymentStatus === 'REFUNDED' ? 'text-emerald-800' : 'text-amber-800'">
+              <span *ngIf="b.bookingStatus === 'CANCELLED'">✅</span>
+              <span *ngIf="b.bookingStatus !== 'CANCELLED'">🛡️</span>
+              {{ b.bookingStatus === 'CANCELLED' ? 'Automatic Cancellation & Bank Refund Credited' : 'Cancellation & Refund Workflow Status' }}
+            </h4>
+            <span class="px-3 py-1 rounded-xl border font-black text-xs"
+                  [ngClass]="b.bookingStatus === 'CANCELLED' || b.paymentStatus === 'REFUNDED' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-amber-100 text-amber-800 border-amber-200'">
+              {{ b.bookingStatus === 'CANCELLED' ? 'REFUND CREDITED TO BANK' : b.cancellationStatus }}
+            </span>
+          </div>
+
+          <!-- Refund calculation summary -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-white p-3.5 rounded-xl border shadow-sm"
+               [ngClass]="b.bookingStatus === 'CANCELLED' ? 'border-emerald-200' : 'border-amber-200/80'">
+            <div>
+              <span class="text-slate-400 block font-bold text-[11px]">Applied Policy Tier:</span>
+              <span class="font-bold text-blue-700">{{ b.appliedRefundPolicy || (b.refundPercentage ? (b.refundPercentage + '% Refund Tier') : 'Standard Policy') }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block font-bold text-[11px]">Amount Credited to Bank:</span>
+              <span class="font-black text-emerald-700">{{ (b.calculatedRefundAmount || 0) | currencyFormatter }} ({{ b.refundPercentage }}%)</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block font-bold text-[11px]">Bank Reference (UTR):</span>
+              <span class="font-mono font-bold text-slate-700">{{ b.refundTransactionRef || 'NEFT-REF-DIRECT' }}</span>
+            </div>
+          </div>
+
+          <!-- Bank Remarks / Beneficiary Note -->
+          <div *ngIf="b.adminRemarks" class="p-3 rounded-xl bg-white border border-emerald-200 text-xs text-slate-700 flex items-start gap-2">
+            <span class="text-emerald-600 text-sm">🏦</span>
+            <div class="leading-relaxed">
+              <span class="font-bold text-slate-900 block">Bank Transfer Audit:</span>
+              {{ b.adminRemarks }}
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ACTIONS BAR -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-200">
+          
+          <!-- View E-Tickets Button -->
+          <a [routerLink]="['/tickets/boarding-pass', b.bookingReference]"
+             class="px-5 py-2.5 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-all flex items-center gap-2 shadow-sm">
+            <span>🎫</span> View E-Ticket Boarding Passes
+          </a>
+
+          <!-- Cancellation & Reschedule Action -->
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Reschedule Flight Action Button -->
+            <button *ngIf="b.bookingStatus !== 'CANCELLED' && (!b.cancellationStatus || b.cancellationStatus === 'NONE' || b.cancellationStatus === 'SUPPORT_REJECTED')"
+                    type="button" (click)="openRescheduleModal(b)"
+                    class="px-5 py-2.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
+              <span>📅</span> Reschedule Flight
+            </button>
+
+            <!-- Instant Cancellation & Bank Refund Button -->
+            <button *ngIf="b.bookingStatus !== 'CANCELLED' && (!b.cancellationStatus || b.cancellationStatus === 'NONE' || b.cancellationStatus === 'SUPPORT_REJECTED')"
+                    type="button" (click)="openCancellationModal(b)"
+                    class="px-5 py-2.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+              <span>🛡️</span> Cancel & Instant Bank Refund
+            </button>
+
+            <span *ngIf="b.bookingStatus === 'CANCELLED' || b.paymentStatus === 'REFUNDED'" 
+                  class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-xl flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Cancelled & Refund Credited
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CANCELLATION & AUTOMATIC BANK REFUND MODAL -->
+<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto">
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl space-y-5 text-slate-800 animate-in fade-in zoom-in duration-200 my-8">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center font-black">
+          🛡️
+        </div>
+        <div>
+          <h3 class="text-base sm:text-lg font-black text-slate-900">Automatic Cancellation & Bank Refund</h3>
+          <span class="text-xs text-slate-400 font-mono">PNR: {{ selectedBooking?.bookingReference }}</span>
+        </div>
+      </div>
+
+      <button type="button" (click)="closeModal()" class="text-slate-400 hover:text-slate-600 font-black text-lg p-1">
+        ✕
+      </button>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- VIEW A: INSTANT BANK REFUND SUCCESS RECEIPT              -->
+    <!-- ======================================================== -->
+    <div *ngIf="showRefundReceipt && refundReceipt" class="space-y-5 py-2 text-center animate-in zoom-in fade-in duration-200">
+      <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-3xl font-black shadow-inner">
+        ✓
+      </div>
+
+      <div>
+        <span class="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider mb-2">
+          Automatic Refund Credited to Bank
+        </span>
+        <h4 class="text-xl font-black text-slate-900">Refund Transferred Successfully!</h4>
+        <p class="text-xs text-slate-500 mt-1">
+          Your flight reservation has been cancelled and funds have been credited to your bank account.
+        </p>
+      </div>
+
+      <!-- Amount Highlight Card -->
+      <div class="p-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 space-y-1">
+        <span class="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Amount Credited to Bank</span>
+        <div class="text-3xl font-black text-emerald-700">
+          {{ refundReceipt.refundAmount | currencyFormatter }}
+        </div>
+        <span class="text-[11px] font-bold text-emerald-600 block">
+          {{ refundReceipt.refundPercentage }}% Authoritative Refund Tier Applied
+        </span>
+      </div>
+
+      <!-- Bank Transfer Details Breakdown -->
+      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left text-xs space-y-2.5">
+        <div class="flex justify-between items-center py-1 border-b border-slate-200">
+          <span class="text-slate-500 font-medium">Beneficiary Name:</span>
+          <span class="font-bold text-slate-900">{{ refundReceipt.passengerName }}</span>
+        </div>
+        <div class="flex justify-between items-center py-1 border-b border-slate-200">
+          <span class="text-slate-500 font-medium">Credited Bank:</span>
+          <span class="font-black text-blue-700">{{ refundReceipt.bankName }}</span>
+        </div>
+        <div class="flex justify-between items-center py-1 border-b border-slate-200">
+          <span class="text-slate-500 font-medium">Account / VPA:</span>
+          <span class="font-mono font-bold text-slate-800">{{ refundReceipt.accountMasked }}</span>
+        </div>
+        <div class="flex justify-between items-center py-1 border-b border-slate-200">
+          <span class="text-slate-500 font-medium">IFSC Code:</span>
+          <span class="font-mono font-bold text-slate-800">{{ refundReceipt.ifscCode }}</span>
+        </div>
+        <div class="flex justify-between items-center py-1 border-b border-slate-200">
+          <span class="text-slate-500 font-medium">Bank UTR / Transaction Ref:</span>
+          <span class="font-mono font-black text-emerald-700">{{ refundReceipt.transactionRef }}</span>
+        </div>
+        <div class="flex justify-between items-center py-1">
+          <span class="text-slate-500 font-medium">Transfer Timestamp:</span>
+          <span class="text-slate-700 font-medium">{{ refundReceipt.timestamp }}</span>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button type="button" (click)="closeModal()"
+                class="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/30 transition-all">
+          Done • View Updated Tickets →
+        </button>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- VIEW B: PRE-CANCELLATION FORM WITH BANK DETAILS          -->
+    <!-- ======================================================== -->
+    <div *ngIf="!showRefundReceipt">
+      <!-- Loading Preview -->
+      <div *ngIf="isPreviewLoading" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+        <p class="text-xs text-slate-500 mt-2 font-bold">Calculating authoritative refund eligibility based on flight hours...</p>
+      </div>
+
+      <!-- PREVIEW CALCULATION DETAILS & BANK ACCOUNT FORM -->
+      <div *ngIf="!isPreviewLoading && cancellationPreview" class="space-y-4 text-xs">
+        
+        <!-- Departure & Time Remaining Card -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+          <div class="flex justify-between">
+            <span class="text-slate-500 font-medium">Flight Departure:</span>
+            <span class="font-black text-slate-800">{{ cancellationPreview.flightDepartureTime | date:'medium' }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500 font-medium">Time Until Departure:</span>
+            <span class="font-black text-blue-600">{{ cancellationPreview.hoursRemaining }} hours remaining</span>
+          </div>
+          <div class="flex justify-between border-t border-slate-200 pt-2">
+            <span class="text-slate-500 font-medium">Applicable Refund Policy:</span>
+            <span class="font-black text-amber-700">{{ cancellationPreview.policyTier }}</span>
+          </div>
+        </div>
+
+        <!-- Refund Breakdown Box -->
+        <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1.5">
+          <div class="flex justify-between text-slate-600">
+            <span>Original Ticket Fare Paid:</span>
+            <span class="font-bold text-slate-900">{{ cancellationPreview.eligibleAmount | currencyFormatter }}</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>Auto Refund Rate (Based on {{ cancellationPreview.hoursRemaining }}h):</span>
+            <span class="font-black text-emerald-700">{{ cancellationPreview.refundPercentage }}% Refund</span>
+          </div>
+          <div class="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-emerald-200">
+            <span>Direct Credit to Bank Account:</span>
+            <span class="text-emerald-700 text-base font-black">{{ cancellationPreview.estimatedRefundAmount | currencyFormatter }}</span>
+          </div>
+        </div>
+
+        <!-- BANK DETAILS FORM SECTION -->
+        <div class="p-4 rounded-2xl bg-blue-50/50 border border-blue-200 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-blue-200">
+            <div class="font-black text-slate-900 flex items-center gap-1.5 text-xs">
+              <span>🏦</span> Destination Bank Account for Instant Refund Credit
+            </div>
+            <!-- Mode Switch: Bank vs UPI -->
+            <div class="flex items-center bg-white p-0.5 rounded-xl border border-blue-200 text-[10px] font-bold">
+              <button type="button" (click)="bankDetails.transferMode = 'BANK'"
+                      [ngClass]="bankDetails.transferMode === 'BANK' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-900'"
+                      class="px-2.5 py-1 rounded-lg transition-all">
+                Bank A/C (NEFT)
+              </button>
+              <button type="button" (click)="bankDetails.transferMode = 'UPI'"
+                      [ngClass]="bankDetails.transferMode === 'UPI' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-900'"
+                      class="px-2.5 py-1 rounded-lg transition-all">
+                UPI ID
+              </button>
+            </div>
+          </div>
+
+          <!-- DIRECT BANK TRANSFER INPUTS -->
+          <div *ngIf="bankDetails.transferMode === 'BANK'" class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Account Holder Name *</label>
+                <input type="text" [(ngModel)]="bankDetails.accountHolderName"
+                       placeholder="e.g. Sindhu Sakthi"
+                       class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 font-semibold focus:outline-none focus:border-blue-500">
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Bank Name *</label>
+                <select [(ngModel)]="bankDetails.bankName"
+                        class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 font-semibold focus:outline-none focus:border-blue-500">
+                  <option *ngFor="let bName of bankNameOptions" [value]="bName">{{ bName }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Bank Account Number *</label>
+                <input type="password" [(ngModel)]="bankDetails.accountNumber"
+                       placeholder="e.g. 50100234567891"
+                       class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 font-mono text-xs text-slate-900 font-bold focus:outline-none focus:border-blue-500">
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Confirm Account Number *</label>
+                <input type="text" [(ngModel)]="bankDetails.confirmAccountNumber"
+                       placeholder="Re-enter account number"
+                       class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 font-mono text-xs text-slate-900 font-bold focus:outline-none focus:border-blue-500">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Bank IFSC Code *</label>
+              <input type="text" [(ngModel)]="bankDetails.ifscCode"
+                     placeholder="e.g. HDFC0001234 or SBIN0000456"
+                     class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 font-mono font-bold uppercase text-xs text-slate-900 focus:outline-none focus:border-blue-500">
+            </div>
+          </div>
+
+          <!-- UPI ID INPUT -->
+          <div *ngIf="bankDetails.transferMode === 'UPI'" class="space-y-2">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">UPI Virtual Payment Address (VPA) *</label>
+              <input type="text" [(ngModel)]="bankDetails.upiId"
+                     placeholder="e.g. username@okhdfcbank or phone@paytm"
+                     class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 font-mono font-bold text-xs text-slate-900 focus:outline-none focus:border-blue-500">
+            </div>
+            <p class="text-[10px] text-slate-500">Fast instant credit directly linked to your mobile UPI handle.</p>
+          </div>
+
+          <!-- Instant Credit Notice -->
+          <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[10px] text-emerald-800 flex items-start gap-1.5 font-medium">
+            <span>⚡</span>
+            <span>
+              <strong>Instant Auto-Credit Guarantee:</strong> Refund of <strong>{{ cancellationPreview.estimatedRefundAmount | currencyFormatter }}</strong> will be automatically credited to this bank account upon confirmation. No manual waiting periods.
+            </span>
+          </div>
+        </div>
+
+        <!-- Reason Input -->
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">Reason for Cancellation (Optional)</label>
+          <input type="text" [(ngModel)]="cancellationReason"
+                 class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+                 placeholder="e.g. Plan changed / personal emergency">
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-between gap-4 pt-3 border-t border-slate-200">
+          <button type="button" (click)="closeModal()" class="px-5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-200 transition-all">
+            Keep Booking
+          </button>
+
+          <button type="button" (click)="submitCancellationRequest()" [disabled]="isCancelling || !cancellationPreview.eligibleForCancellation"
+                  class="px-6 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-rose-600/20 disabled:opacity-50 transition-all flex items-center gap-1.5">
+            <span *ngIf="isCancelling" class="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>
+            <span *ngIf="!isCancelling">Confirm & Credit ₹{{ cancellationPreview.estimatedRefundAmount | currencyFormatter }} to Bank →</span>
+            <span *ngIf="isCancelling">Processing Auto-Refund...</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- FLIGHT RESCHEDULE MULTI-STEP WORKSPACE MODAL                   -->
+<!-- ============================================================== -->
+<div *ngIf="showRescheduleModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white border border-slate-200 rounded-3xl p-5 sm:p-7 max-w-4xl w-full shadow-2xl space-y-5 text-slate-800 animate-in fade-in zoom-in duration-150 max-h-[92vh] overflow-y-auto">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center font-black text-lg">
+          📅
+        </div>
+        <div>
+          <h3 class="text-lg font-black text-slate-900 leading-tight">Flight Rescheduling Workspace</h3>
+          <p class="text-xs text-slate-400">Transfer your reservation to a new scheduled flight & select new seats.</p>
+        </div>
+      </div>
+
+      <button type="button" (click)="closeRescheduleModal()" class="text-slate-400 hover:text-slate-600 font-black text-lg p-1">
+        ✕
+      </button>
+    </div>
+
+    <!-- Stepper Navigation (1 to 4) -->
+    <div class="grid grid-cols-4 gap-2 text-center text-xs">
+      <div class="p-2 rounded-xl border font-bold transition-all"
+           [ngClass]="rescheduleStep === 1 ? 'bg-blue-50 border-blue-500 text-blue-700' : (rescheduleStep > 1 ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-400')">
+        <span class="block text-[10px] uppercase font-black">Step 1</span>
+        <span class="truncate block">1. Pick Flight</span>
+      </div>
+      <div class="p-2 rounded-xl border font-bold transition-all"
+           [ngClass]="rescheduleStep === 2 ? 'bg-blue-50 border-blue-500 text-blue-700' : (rescheduleStep > 2 ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-400')">
+        <span class="block text-[10px] uppercase font-black">Step 2</span>
+        <span class="truncate block">2. Pick Seats</span>
+      </div>
+      <div class="p-2 rounded-xl border font-bold transition-all"
+           [ngClass]="rescheduleStep === 3 ? 'bg-blue-50 border-blue-500 text-blue-700' : (rescheduleStep > 3 ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-400')">
+        <span class="block text-[10px] uppercase font-black">Step 3</span>
+        <span class="truncate block">3. Payment</span>
+      </div>
+      <div class="p-2 rounded-xl border font-bold transition-all"
+           [ngClass]="rescheduleStep === 4 ? 'bg-emerald-50 border-emerald-500 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-400'">
+        <span class="block text-[10px] uppercase font-black">Step 4</span>
+        <span class="truncate block">4. Confirmed</span>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- CURRENT BOOKING DETAIL ON TOP (ALWAYS VISIBLE)                  -->
+    <!-- ============================================================== -->
+    <div class="p-4 sm:p-5 rounded-2xl bg-slate-50/90 border border-slate-200 space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-mono text-[10px] font-black uppercase">Current Active Booking</span>
+          <span class="font-mono text-xs font-black text-slate-800">PNR: {{ rescheduleBookingData?.bookingReference }}</span>
+          <span *ngIf="rescheduleBookingData?.isRescheduled" class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 font-mono text-[10px] font-black uppercase">
+            🔄 Rescheduled
+          </span>
+        </div>
+        <span class="text-xs font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-lg">
+          Original Fare Paid: {{ rescheduleBookingData?.fareAmount | currencyFormatter }}
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div>
+          <span class="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Flight</span>
+          <span class="font-black text-slate-900 mt-0.5 block">{{ rescheduleBookingData?.flightNumber }}</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Route</span>
+          <span class="font-black text-blue-600 mt-0.5 block">{{ rescheduleBookingData?.source }} → {{ rescheduleBookingData?.destination }}</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Departure Date</span>
+          <span class="font-bold text-slate-800 mt-0.5 block">{{ rescheduleBookingData?.departureDate }}</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[10px] font-bold uppercase tracking-wider">Current Seat(s)</span>
+          <span class="font-mono font-black text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200 inline-block mt-0.5">
+            {{ rescheduleBookingData?.seatNumber }}
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="rescheduleBookingData?.passengers && rescheduleBookingData.passengers.length > 1" class="text-[11px] text-slate-500 pt-1 border-t border-slate-200/50 flex flex-wrap gap-x-4 gap-y-1">
+        <span class="font-bold text-slate-600">Passengers:</span>
+        <span *ngFor="let p of rescheduleBookingData.passengers" class="text-slate-700">
+          {{ p.fullName }} (<strong class="text-emerald-700 font-mono">Seat {{ p.seatNumber }}</strong>)
+        </span>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- STEP 1: SEARCH & SELECT NEW FLIGHT                             -->
+    <!-- ============================================================== -->
+    <div *ngIf="rescheduleStep === 1" class="space-y-4">
+      <!-- Search Filter Bar -->
+      <div class="p-4 rounded-2xl bg-white border border-slate-200 flex flex-wrap items-center gap-3">
+        <div class="flex-1 min-w-[140px]">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Route</label>
+          <div class="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800">
+            {{ rescheduleSearchOrigin }} → {{ rescheduleSearchDest }}
+          </div>
+        </div>
+
+        <div class="flex-1 min-w-[160px]">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">New Departure Date</label>
+          <input type="date" [(ngModel)]="rescheduleSearchDate" (change)="filterAlternativeFlights()"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div class="pt-4">
+          <button type="button" (click)="searchAlternativeFlights()" 
+                  class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+            <span>🔍</span> Search Flights
+          </button>
+        </div>
+      </div>
+
+      <!-- Alternative Flights List -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <span class="font-bold uppercase tracking-wider text-[11px]">Available Flights on Route ({{ availableAlternativeFlights.length }})</span>
+          <span class="text-[11px]">Click a flight card to select</span>
+        </div>
+
+        <div *ngIf="isRescheduleLoading" class="text-center py-10">
+          <div class="inline-block animate-spin rounded-full h-7 w-7 border-3 border-blue-600 border-t-transparent"></div>
+          <p class="text-xs text-slate-400 mt-2 font-bold">Checking operational flight schedules...</p>
+        </div>
+
+        <div *ngIf="!isRescheduleLoading && availableAlternativeFlights.length === 0" class="text-center py-8 bg-slate-50 rounded-2xl border border-slate-200">
+          <p class="text-xs text-slate-500 font-bold">No alternative flights found for this date. Please select another date above.</p>
+        </div>
+
+        <div *ngFor="let f of availableAlternativeFlights" 
+             (click)="selectNewFlight(f)"
+             class="p-4 rounded-2xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:shadow-md"
+             [ngClass]="selectedNewFlight?.id === f.id ? 'bg-blue-50/70 border-blue-500 ring-2 ring-blue-500/20' : 'bg-white border-slate-200 hover:border-blue-300'">
+          
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-black text-slate-900">{{ f.flightNumber }}</span>
+              <span class="text-xs text-slate-600 font-semibold">• {{ f.airline }}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-600 font-bold">{{ f.aircraftModel || 'Airbus A320neo' }}</span>
+            </div>
+            <div class="text-xs font-black text-slate-800 flex items-center gap-2">
+              <span class="text-blue-600 font-mono">{{ f.departureTime }}</span>
+              <span class="text-slate-400 font-normal">({{ f.source || f.origin }})</span>
+              <span class="text-slate-300 text-[10px]">━━━ {{ f.duration || '2h 15m' }} ━━▶</span>
+              <span class="text-blue-600 font-mono">{{ f.arrivalTime }}</span>
+              <span class="text-slate-400 font-normal">({{ f.destination }})</span>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              Date: <strong class="text-slate-700">{{ f.departureDate }}</strong> • Available: <strong class="text-emerald-700">{{ f.availableSeats }} Seats</strong>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
+            <div class="text-right">
+              <div class="text-[10px] text-slate-400 font-bold uppercase">Flight Fare</div>
+              <div class="text-sm font-black text-slate-900">{{ (f.basePrice || 5000) | currencyFormatter }}</div>
+              <div class="text-[10px] font-bold" [ngClass]="(f.basePrice || 5000) > (rescheduleBookingData?.fareAmount || 5000) ? 'text-amber-700' : 'text-emerald-700'">
+                {{ (f.basePrice || 5000) > (rescheduleBookingData?.fareAmount || 5000) ? '+ ' + (((f.basePrice || 5000) - (rescheduleBookingData?.fareAmount || 5000)) | currencyFormatter) + ' Diff' : 'No Fare Difference' }}
+              </div>
+            </div>
+
+            <button type="button" 
+                    class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap"
+                    [ngClass]="selectedNewFlight?.id === f.id ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700'">
+              {{ selectedNewFlight?.id === f.id ? 'Selected ✓' : 'Select Flight →' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- STEP 2: PICK SEAT(S)                                            -->
+    <!-- ============================================================== -->
+    <div *ngIf="rescheduleStep === 2" class="space-y-4">
+      <!-- Passenger Tab Bar -->
+      <div class="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Select Seats For:</span>
+          <span class="text-xs font-bold text-blue-700">New Flight: {{ selectedNewFlight?.flightNumber }} ({{ selectedNewFlight?.departureDate }})</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button *ngFor="let p of reschedulePassengersList; let pIdx = index"
+                  type="button" (click)="activePassengerIdx = pIdx"
+                  class="px-3.5 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2"
+                  [ngClass]="activePassengerIdx === pIdx ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'">
+            <span>👤 {{ p.fullName || 'Passenger ' + (pIdx + 1) }}</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-black"
+                  [ngClass]="activePassengerIdx === pIdx ? 'bg-white text-blue-700' : 'bg-emerald-100 text-emerald-800'">
+              Seat {{ selectedSeats[pIdx] || 'Click Seat' }}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Fuselage Seat Grid -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+            <span>💺</span> Cabin Fuselage Seat Map
+          </h4>
+
+          <!-- Legend -->
+          <div class="flex items-center gap-3 text-[11px] font-bold">
+            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded border border-slate-300 bg-white"></span> Available</div>
+            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-blue-600 text-white"></span> Selected</div>
+            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-slate-200"></span> Booked</div>
+          </div>
+        </div>
+
+        <!-- Cockpit Icon -->
+        <div class="text-center text-slate-300 font-black text-[10px] uppercase tracking-widest">
+          ▲ FRONT / COCKPIT
+        </div>
+
+        <!-- Seat Matrix -->
+        <div class="space-y-1.5 max-h-[300px] overflow-y-auto px-2 py-1">
+          <div *ngFor="let row of seatRows" class="flex items-center justify-center gap-2 sm:gap-4 text-xs font-bold">
+            
+            <!-- Left (A, B, C) -->
+            <div class="flex items-center gap-1">
+              <button *ngFor="let col of seatColsLeft"
+                      type="button"
+                      (click)="pickSeat(row + col)"
+                      [disabled]="isSeatOccupied(row + col)"
+                      [ngClass]="{
+                        'bg-blue-600 text-white border-blue-600 shadow-md font-black scale-105 ring-2 ring-blue-300': isSeatSelectedByCurrentPassenger(row + col),
+                        'bg-purple-600 text-white border-purple-600': isSeatSelectedByAnyPassenger(row + col) && !isSeatSelectedByCurrentPassenger(row + col),
+                        'bg-slate-200 text-slate-400 border-slate-200 cursor-not-allowed': isSeatOccupied(row + col),
+                        'bg-white text-slate-700 border-slate-300 hover:border-blue-500 hover:bg-blue-50': !isSeatOccupied(row + col) && !isSeatSelectedByAnyPassenger(row + col)
+                      }"
+                      class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border text-[10px] flex items-center justify-center transition-all">
+                {{ row }}{{ col }}
+              </button>
+            </div>
+
+            <!-- Aisle -->
+            <div class="w-5 text-center font-mono text-[9px] text-slate-300 font-bold">
+              {{ row }}
+            </div>
+
+            <!-- Right (D, E, F) -->
+            <div class="flex items-center gap-1">
+              <button *ngFor="let col of seatColsRight"
+                      type="button"
+                      (click)="pickSeat(row + col)"
+                      [disabled]="isSeatOccupied(row + col)"
+                      [ngClass]="{
+                        'bg-blue-600 text-white border-blue-600 shadow-md font-black scale-105 ring-2 ring-blue-300': isSeatSelectedByCurrentPassenger(row + col),
+                        'bg-purple-600 text-white border-purple-600': isSeatSelectedByAnyPassenger(row + col) && !isSeatSelectedByCurrentPassenger(row + col),
+                        'bg-slate-200 text-slate-400 border-slate-200 cursor-not-allowed': isSeatOccupied(row + col),
+                        'bg-white text-slate-700 border-slate-300 hover:border-blue-500 hover:bg-blue-50': !isSeatOccupied(row + col) && !isSeatSelectedByAnyPassenger(row + col)
+                      }"
+                      class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border text-[10px] flex items-center justify-center transition-all">
+                {{ row }}{{ col }}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="flex items-center justify-between pt-2">
+        <button type="button" (click)="rescheduleStep = 1"
+                class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all">
+          ← Back to Flight Selection
+        </button>
+        <button type="button" (click)="proceedToPayment()" [disabled]="!areAllSeatsPicked()"
+                class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-blue-600/30 disabled:opacity-50 transition-all">
+          Proceed to Review & Payment →
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- STEP 3: REVIEW & PAYMENT FOR RESCHEDULE                        -->
+    <!-- ============================================================== -->
+    <div *ngIf="rescheduleStep === 3" class="space-y-4">
+      <!-- Fare Breakdown -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+        <h4 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+          <span>💰</span> Fare Difference & Reschedule Fee Breakdown
+        </h4>
+
+        <div class="divide-y divide-slate-100 text-xs space-y-2">
+          <div class="flex justify-between pt-1.5">
+            <span class="text-slate-500">Original Flight Fare Paid:</span>
+            <span class="font-bold text-slate-700">{{ rescheduleBookingData?.fareAmount | currencyFormatter }}</span>
+          </div>
+          <div class="flex justify-between pt-1.5">
+            <span class="text-slate-500">New Flight Fare ({{ selectedNewFlight?.flightNumber }}):</span>
+            <span class="font-bold text-slate-700">{{ (selectedNewFlight?.basePrice || 5000) | currencyFormatter }}</span>
+          </div>
+          <div class="flex justify-between pt-1.5">
+            <span class="text-slate-500">Fare Difference:</span>
+            <span class="font-bold text-amber-700">+ {{ fareDifference | currencyFormatter }}</span>
+          </div>
+          <div class="flex justify-between pt-1.5">
+            <span class="text-slate-500">Airline Rescheduling Administrative Fee:</span>
+            <span class="font-bold text-slate-700">+ {{ rescheduleFee | currencyFormatter }}</span>
+          </div>
+          <div class="flex justify-between pt-2.5 text-sm font-black border-t-2 border-slate-200">
+            <span class="text-slate-900">Total Amount Payable:</span>
+            <span class="text-emerald-700 text-lg">{{ totalRescheduleAmount | currencyFormatter }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Method -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+        <h4 class="text-xs font-black uppercase tracking-wider text-slate-900">Choose Payment Method</h4>
+
+        <div class="grid grid-cols-3 gap-3 text-xs font-bold">
+          <button type="button" (click)="paymentMethod = 'CARD'"
+                  class="p-2.5 rounded-xl border text-center transition-all"
+                  [ngClass]="paymentMethod === 'CARD' ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-600'">
+            💳 Card
+          </button>
+          <button type="button" (click)="paymentMethod = 'UPI'"
+                  class="p-2.5 rounded-xl border text-center transition-all"
+                  [ngClass]="paymentMethod === 'UPI' ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-600'">
+            📱 UPI / QR
+          </button>
+          <button type="button" (click)="paymentMethod = 'NETBANKING'"
+                  class="p-2.5 rounded-xl border text-center transition-all"
+                  [ngClass]="paymentMethod === 'NETBANKING' ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-600'">
+            🏦 Net Banking
+          </button>
+        </div>
+
+        <!-- Card Form -->
+        <div *ngIf="paymentMethod === 'CARD'" class="space-y-3 pt-2 text-xs">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Card Number</label>
+              <input type="text" [(ngModel)]="paymentForm.cardNumber" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono font-bold">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Cardholder Name</label>
+              <input type="text" [(ngModel)]="paymentForm.cardHolder" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-semibold">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Expiry Date</label>
+              <input type="text" [(ngModel)]="paymentForm.expiry" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">CVV</label>
+              <input type="password" [(ngModel)]="paymentForm.cvv" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono">
+            </div>
+          </div>
+        </div>
+
+        <!-- UPI Form -->
+        <div *ngIf="paymentMethod === 'UPI'" class="space-y-2 pt-2 text-xs text-center py-3 bg-slate-50 rounded-xl">
+          <div class="text-2xl">📱</div>
+          <p class="text-xs font-bold text-slate-700">Scan & Pay via any UPI App (GPay, PhonePe, Paytm)</p>
+          <input type="text" [(ngModel)]="paymentForm.upiId" class="w-64 mx-auto px-3 py-1.5 rounded-xl border border-slate-300 text-center font-mono font-bold block">
+        </div>
+
+        <!-- Net Banking Form -->
+        <div *ngIf="paymentMethod === 'NETBANKING'" class="space-y-2 pt-2 text-xs">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Select Bank</label>
+          <select [(ngModel)]="paymentForm.bank" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold bg-white">
+            <option value="HDFC Bank">HDFC Bank</option>
+            <option value="ICICI Bank">ICICI Bank</option>
+            <option value="State Bank of India">State Bank of India</option>
+            <option value="Axis Bank">Axis Bank</option>
+            <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="flex items-center justify-between pt-2">
+        <button type="button" (click)="rescheduleStep = 2"
+                class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all">
+          ← Back to Seat Selection
+        </button>
+        <button type="button" (click)="submitReschedulePayment()" [disabled]="isSubmittingReschedule"
+                class="px-7 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/30 flex items-center gap-2 transition-all">
+          <span *ngIf="isSubmittingReschedule" class="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>
+          <span>Pay {{ totalRescheduleAmount | currencyFormatter }} & Confirm Reschedule ✓</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- STEP 4: SUCCESS CONFIRMATION                                    -->
+    <!-- ============================================================== -->
+    <div *ngIf="rescheduleStep === 4" class="text-center py-6 space-y-4">
+      <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto font-black">
+        ✓
+      </div>
+      <h3 class="text-xl font-black text-slate-900">Flight Successfully Rescheduled!</h3>
+      <p class="text-xs text-slate-500 max-w-md mx-auto">
+        Your reservation PNR <strong class="font-mono text-slate-800">{{ rescheduleBookingData?.bookingReference }}</strong> has been confirmed on new flight <strong class="text-blue-600">{{ selectedNewFlight?.flightNumber }}</strong>.
+      </p>
+
+      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 max-w-md mx-auto text-xs text-left space-y-2">
+        <div class="flex justify-between"><span class="text-slate-400">New Flight:</span><span class="font-black text-slate-800">{{ selectedNewFlight?.flightNumber }} ({{ selectedNewFlight?.airline }})</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">New Departure Date:</span><span class="font-bold text-slate-800">{{ selectedNewFlight?.departureDate }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Timings:</span><span class="font-bold text-blue-600">{{ selectedNewFlight?.departureTime }} - {{ selectedNewFlight?.arrivalTime }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Assigned Seat:</span><span class="font-black text-emerald-700">{{ selectedSeats[0] }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Booking Status:</span><span class="font-black text-emerald-700">CONFIRMED (RESCHEDULED) ✓</span></div>
+      </div>
+
+      <div class="pt-2 flex items-center justify-center gap-3">
+        <button type="button" (click)="closeRescheduleModal()"
+                class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-md transition-all">
+          Done & Back to My Bookings
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

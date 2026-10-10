@@ -1,0 +1,177 @@
+<div class="min-h-screen bg-slate-50 text-slate-800 p-6 md:p-10">
+  <div class="max-w-4xl mx-auto space-y-8">
+    
+    <!-- Top Nav -->
+    <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+      <a routerLink="/tickets/my-tickets" class="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1.5 transition-colors">
+        <span>←</span> Back to My Bookings
+      </a>
+      <div class="flex items-center gap-2">
+        <span *ngIf="booking?.isRescheduled" class="text-xs font-black text-amber-800 bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-300 shadow-sm flex items-center gap-1.5">
+          <span>🔄</span> Rescheduled Ticket (PNR: {{ booking?.bookingReference || bookingReference }})
+        </span>
+        <span *ngIf="!booking?.isRescheduled" class="text-xs font-black text-emerald-700 bg-emerald-50 px-3.5 py-1.5 rounded-full border border-emerald-200 shadow-sm">
+          ● Confirmed & Issued (PNR: {{ booking?.bookingReference || bookingReference }})
+        </span>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading" class="text-center py-16">
+      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+      <p class="text-xs text-slate-500 mt-3 font-bold">Retrieving SkyWings E-Tickets & Boarding Passes...</p>
+    </div>
+
+    <!-- MAIN E-TICKET & BOARDING PASS CONTAINER -->
+    <div *ngIf="!isLoading && booking" class="space-y-6">
+      
+      <!-- PNR & Flight Information Header Banner -->
+      <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/20 pb-4 mb-6">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-[11px] font-black uppercase tracking-widest text-sky-200">SkyWings Airlines Official E-Ticket</span>
+              <span *ngIf="booking.isRescheduled" class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] tracking-wider uppercase shadow flex items-center gap-1">
+                <span>🔄</span> RESCHEDULED / REISSUED
+              </span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black tracking-tight mt-0.5">Booking PNR: {{ booking.bookingReference }}</h2>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-sky-200 font-bold">Total Paid ({{ booking.passengers?.length || 1 }} Pax)</div>
+            <div class="text-2xl font-black text-white">{{ booking.fareAmount | currencyFormatter }}</div>
+          </div>
+        </div>
+
+        <!-- Route & Timing Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 items-center">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-200">Origin Departure</span>
+            <div class="text-2xl font-black">{{ booking.source || flight?.source || flight?.origin || 'DEL' }}</div>
+            <div class="text-xs text-slate-200 mt-1">{{ flight?.departureDate }} • {{ flight?.departureTime }}</div>
+          </div>
+
+          <div class="flex flex-col items-center justify-center text-center">
+            <span class="text-[10px] font-bold text-sky-200 uppercase tracking-widest mb-1">{{ flight?.duration || 'Non-Stop' }}</span>
+            <div class="w-full relative flex items-center justify-center">
+              <div class="w-full border-t border-white/30"></div>
+              <div class="absolute w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center text-xs font-black">✈</div>
+            </div>
+            <span class="text-xs font-bold text-sky-200 mt-1">Flight {{ booking.flightNumber || flight?.flightNumber }}</span>
+          </div>
+
+          <div class="text-left sm:text-right">
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-200">Destination Arrival</span>
+            <div class="text-2xl font-black">{{ booking.destination || flight?.destination || 'BOM' }}</div>
+            <div class="text-xs text-slate-200 mt-1">{{ flight?.departureDate }} • {{ flight?.arrivalTime }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INDIVIDUAL PASSENGER BOARDING PASS CARDS -->
+      <div class="space-y-4">
+        <h3 class="text-sm font-black uppercase tracking-wider text-slate-500">
+          Individual Passenger Boarding Passes ({{ booking.passengers?.length || 1 }})
+        </h3>
+
+        <div *ngFor="let p of booking.passengers; let idx = index"
+             class="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-7 shadow-sm hover:shadow-md transition-all space-y-4">
+          
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 font-black text-xs flex items-center justify-center border border-blue-200">
+                #{{ idx + 1 }}
+              </span>
+              <div>
+                <div class="text-base font-extrabold text-slate-900">{{ p.fullName }}</div>
+                <div class="text-xs text-slate-500">Ticket: <strong class="text-blue-700 font-mono">{{ p.ticketNumber || ('TKT-' + booking.bookingReference + '-0' + (idx + 1)) }}</strong></div>
+              </div>
+            </div>
+
+            <!-- Class & Seat Badges -->
+            <div class="flex items-center gap-3">
+              <span *ngIf="booking.isRescheduled" class="px-2.5 py-1 rounded-xl bg-amber-50 text-amber-800 border border-amber-300 font-extrabold text-xs flex items-center gap-1">
+                🔄 Rescheduled
+              </span>
+              <span class="px-3 py-1 rounded-xl bg-purple-50 text-purple-700 border border-purple-200/70 font-extrabold text-xs">
+                {{ p.travelClass }}
+              </span>
+              <span class="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/70 font-black text-xs">
+                Seat {{ p.seatNumber }}
+              </span>
+              <span *ngIf="p.mealName" class="px-3 py-1 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 font-extrabold text-xs flex items-center gap-1">
+                <span>🍱</span>
+                <span>{{ p.mealName }}</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- In-Flight Dining Row -->
+          <div *ngIf="p.mealName" class="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 text-xs flex items-center justify-between">
+            <div class="flex items-center gap-2 text-amber-950 font-bold">
+              <span>🍽️ In-Flight Meal:</span>
+              <span class="text-amber-900 font-black">{{ p.mealName }}</span>
+              <span *ngIf="p.dietaryPreference" class="text-[10px] uppercase px-1.5 py-0.5 rounded bg-white text-amber-800 font-bold border border-amber-200">{{ p.dietaryPreference }}</span>
+            </div>
+            <span class="text-xs font-mono font-bold" [class.text-emerald-700]="p.mealPrice && p.mealPrice > 0" [class.text-slate-500]="!p.mealPrice || p.mealPrice === 0">
+              {{ p.mealPrice && p.mealPrice > 0 ? ('₹' + p.mealPrice) : 'Complimentary' }}
+            </span>
+          </div>
+
+          <!-- Grid Breakdown -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div class="p-3 rounded-2xl border"
+                 [ngClass]="booking.isRescheduled ? 'bg-amber-50/70 border-amber-200' : 'bg-emerald-50/60 border-emerald-100'">
+              <span class="block font-bold text-[11px] uppercase tracking-wider"
+                    [ngClass]="booking.isRescheduled ? 'text-amber-800' : 'text-emerald-700'">
+                Passenger Status
+              </span>
+              <span class="font-black mt-0.5 block"
+                    [ngClass]="booking.isRescheduled ? 'text-amber-900' : 'text-emerald-800'">
+                {{ booking.isRescheduled ? 'RESCHEDULED (CONFIRMED)' : (p.passengerStatus || 'CONFIRMED') }}
+              </span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+              <span class="text-slate-400 block font-bold text-[11px] uppercase tracking-wider">Individual Fare</span>
+              <span class="font-black text-slate-900 mt-0.5 block">{{ (p.fareAmount || 5000) | currencyFormatter }}</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+              <span class="text-slate-400 block font-bold text-[11px] uppercase tracking-wider">Gate</span>
+              <span class="font-black text-blue-700 mt-0.5 block">{{ flight?.gate || 'T2 - G14' }}</span>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+              <span class="text-slate-400 block font-bold text-[11px] uppercase tracking-wider">Boarding Time</span>
+              <span class="font-black text-amber-700 mt-0.5 block">45 Min Prior</span>
+            </div>
+          </div>
+
+          <!-- Barcode Strip -->
+          <div class="pt-2">
+            <div class="h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-700 text-xs font-mono tracking-widest border border-slate-200">
+              ||||| ||| |||||| |||| | |||||||| |||||| |||| | ||||
+            </div>
+            <div class="text-center text-[10px] font-mono text-slate-400 font-bold tracking-wider mt-1">
+              *{{ booking.bookingReference }}*{{ p.ticketNumber }}*{{ p.seatNumber }}*
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center justify-between gap-4 pt-4">
+        <a [routerLink]="['/tracking/live-radar']" [queryParams]="{ flightNumber: flight?.flightNumber }"
+           class="px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 border border-slate-200 shadow-sm transition-all flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+          Track Live Flight Radar
+        </a>
+
+        <button (click)="downloadPass()" 
+                class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/30 transition-all">
+          Print / Download All Boarding Passes
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
