@@ -1,0 +1,1044 @@
+<div class="p-6 md:p-8 max-w-7xl mx-auto space-y-8 font-sans text-slate-800">
+
+  <!-- ========================================================================= -->
+  <!-- TOP BANNER HEADER                                                         -->
+  <!-- ========================================================================= -->
+  <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden border border-white/10">
+    <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+      <img src="assets/icons/skywings-icon.svg" alt="SkyWings" class="w-80 h-80">
+    </div>
+
+    <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-xs font-bold uppercase tracking-wider text-blue-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Airport Ground Control & Baggage Operations Terminal
+        </div>
+        <h1 class="text-3xl lg:text-4xl font-black tracking-tight text-white flex items-center gap-3">
+          <img src="assets/icons/skywings-icon.svg" alt="SkyWings" class="w-9 h-9 rounded-xl shadow-md inline-block">
+          Airport Operations Console
+        </h1>
+        <p class="text-sm text-slate-300 max-w-2xl">
+          Coordinate gate departures, broadcast flight delay advisories, manage passenger check-in manifests, track baggage weight quotas, and issue baggage tag credentials.
+        </p>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="flex flex-wrap items-center gap-3">
+        <button (click)="openCounterCheckIn()" 
+                class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2 transform active:scale-95">
+          <span>+</span> Counter Check-in & Tag Bag
+        </button>
+        <button (click)="exportBaggageManifestCsv()" 
+                class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider border border-white/15 transition-all flex items-center gap-2">
+          <span>📥</span> Export CSV Manifest
+        </button>
+        <button (click)="loadData()" 
+                class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider border border-white/15 transition-all flex items-center gap-2">
+          <span>↻</span> Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Mode Selector Navigation Tabs -->
+    <div class="relative z-10 flex flex-wrap gap-2 pt-6 mt-6 border-t border-white/10">
+      <button (click)="activeTab = 'all'"
+              [ngClass]="activeTab === 'all' ? 'bg-white text-slate-900 shadow-md' : 'bg-white/10 text-white hover:bg-white/20'"
+              class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+        <span>🌐</span> Full Unified Console
+      </button>
+
+      <button (click)="activeTab = 'baggage'"
+              [ngClass]="activeTab === 'baggage' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-white/10 text-slate-300 hover:bg-white/20'"
+              class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+        <span>🧳</span> Check-in & Baggage Details
+        <span class="px-2 py-0.5 rounded-full bg-white/20 text-xs font-extrabold">{{ baggageRecords.length }}</span>
+      </button>
+
+      <button (click)="activeTab = 'flights'"
+              [ngClass]="activeTab === 'flights' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-white/10 text-slate-300 hover:bg-white/20'"
+              class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+        <span>✈️</span> Flight Schedules & Gates
+        <span class="px-2 py-0.5 rounded-full bg-white/20 text-xs font-extrabold">{{ flights.length }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- OPERATIONAL METRICS & KPI CARDS                                           -->
+  <!-- ========================================================================= -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <!-- Scheduled Flights -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Flights Today</span>
+      <div class="text-2xl font-black text-slate-900">{{ flights.length }}</div>
+      <div class="text-[11px] font-semibold text-blue-600">Active Schedules</div>
+    </div>
+
+    <!-- Checked In Bags -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Checked In</span>
+      <div class="text-2xl font-black text-blue-600">{{ checkedInCount }}</div>
+      <div class="text-[11px] font-semibold text-slate-500">Bags at Counter</div>
+    </div>
+
+    <!-- Loaded in Cargo Hold -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Loaded Bags</span>
+      <div class="text-2xl font-black text-indigo-600">{{ loadedCount }}</div>
+      <div class="text-[11px] font-semibold text-emerald-600">Secure Hold Cargo</div>
+    </div>
+
+    <!-- Special Handling Bags -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Special Care</span>
+      <div class="text-2xl font-black text-amber-600">{{ specialHandlingCount }}</div>
+      <div class="text-[11px] font-semibold text-amber-700">Fragile / Priority</div>
+    </div>
+
+    <!-- Extra Fee Revenue -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Excess Fees</span>
+      <div class="text-2xl font-black text-emerald-600">{{ totalExcessFeeCollected | currencyFormatter }}</div>
+      <div class="text-[11px] font-semibold text-emerald-700">Overage Revenue</div>
+    </div>
+
+    <!-- Lost / Delayed Alert -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-1">
+      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Delayed / Lost</span>
+      <div class="text-2xl font-black text-rose-600">{{ lostOrDelayedCount }}</div>
+      <div class="text-[11px] font-semibold text-rose-500">Requires Ground Audit</div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- SECTION 1: CHECK-IN & BAGGAGE DETAILS TABLE WITH PAGINATION               -->
+  <!-- ========================================================================= -->
+  <div *ngIf="activeTab === 'baggage' || activeTab === 'all'" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden space-y-0">
+    
+    <!-- Table Header & Filters Toolbar -->
+    <div class="p-6 border-b border-slate-100 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🧳</span>
+            <h2 class="text-xl font-black text-slate-900 tracking-tight">Check-in Baggage Details & Passenger Manifest</h2>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Real-time baggage manifests, luggage tag numbers, scale weight verifications, excess baggage fees, and special handling instructions.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button (click)="openCounterCheckIn()" 
+                  class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 flex items-center gap-1.5 transition-all">
+            <span>+</span> New Check-in
+          </button>
+          <button (click)="exportBaggageManifestCsv()" 
+                  class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 flex items-center gap-1.5 transition-all">
+            <span>📄</span> CSV Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Controls Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-2">
+        <!-- Search Input -->
+        <div class="relative lg:col-span-1">
+          <input type="text" 
+                 [(ngModel)]="baggageSearchTerm" 
+                 (input)="onBaggageFilterChange()"
+                 placeholder="Search Name, PNR, Flight, Tag..."
+                 class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-blue-600 focus:bg-white transition-all">
+          <span class="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+        </div>
+
+        <!-- Flight Filter -->
+        <div>
+          <select [(ngModel)]="baggageFlightFilter" 
+                  (change)="onBaggageFilterChange()"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-blue-600 transition-all">
+            <option value="ALL">All Scheduled Flights</option>
+            <option *ngFor="let fn of uniqueFlightNumbers" [value]="fn">{{ fn }}</option>
+          </select>
+        </div>
+
+        <!-- Baggage Status Filter -->
+        <div>
+          <select [(ngModel)]="baggageStatusFilter" 
+                  (change)="onBaggageFilterChange()"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-blue-600 transition-all">
+            <option value="ALL">All Baggage Statuses</option>
+            <option value="NOT_CHECKED_IN">Not Checked In</option>
+            <option value="CHECKED_IN">Checked In</option>
+            <option value="LOADED">Loaded in Hold</option>
+            <option value="UNLOADED">Unloaded</option>
+            <option value="DELIVERED">Delivered to Belt</option>
+            <option value="LOST_OR_DELAYED">Lost / Delayed</option>
+          </select>
+        </div>
+
+        <!-- Baggage Type Filter -->
+        <div>
+          <select [(ngModel)]="baggageTypeFilter" 
+                  (change)="onBaggageFilterChange()"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-blue-600 transition-all">
+            <option value="ALL">All Baggage Types</option>
+            <option value="REGULAR">Regular Luggage</option>
+            <option value="SPECIAL">Special Luggage</option>
+          </select>
+        </div>
+
+        <!-- Special Handling Filter -->
+        <div>
+          <select [(ngModel)]="baggageHandlingFilter" 
+                  (change)="onBaggageFilterChange()"
+                  class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-blue-600 transition-all">
+            <option value="ALL">All Special Handling</option>
+            <option value="NONE">Standard Handling</option>
+            <option value="FRAGILE">Fragile / Priority</option>
+            <option value="WHEELCHAIR">Wheelchair equipment</option>
+            <option value="SPORTS_EQUIPMENT">Sports equipment</option>
+            <option value="MUSICAL_INSTRUMENT">Musical instrument</option>
+            <option value="HAZARDOUS_INSPECTED">Hazardous Inspection</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Baggage Records Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-600 text-[11px] uppercase font-extrabold border-b border-slate-200">
+          <tr>
+            <th class="py-3.5 px-5">Passenger & Booking PNR</th>
+            <th class="py-3.5 px-4">Flight & Route</th>
+            <th class="py-3.5 px-4">Tag # & Type</th>
+            <th class="py-3.5 px-4">Allowance</th>
+            <th class="py-3.5 px-4">Actual Weight</th>
+            <th class="py-3.5 px-4">Extra Fee</th>
+            <th class="py-3.5 px-4">Check-in Location & Time</th>
+            <th class="py-3.5 px-4">Special Handling</th>
+            <th class="py-3.5 px-4">Baggage Status</th>
+            <th class="py-3.5 px-5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let b of paginatedBaggage" 
+              class="hover:bg-blue-50/50 transition-colors group cursor-pointer"
+              (click)="openEditBaggage(b)">
+            
+            <!-- Passenger & PNR -->
+            <td class="py-3.5 px-5">
+              <div class="font-bold text-slate-900 group-hover:text-blue-600 text-sm transition-colors">
+                {{ b.passengerName }}
+              </div>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold border border-slate-200">
+                  {{ b.bookingReference }}
+                </span>
+                <span *ngIf="b.seatNumber" class="text-[10px] font-semibold text-slate-500">
+                  Seat {{ b.seatNumber }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Flight & Route -->
+            <td class="py-3.5 px-4">
+              <div class="font-mono font-bold text-blue-600">{{ b.flightNumber }}</div>
+              <div class="font-semibold text-slate-700 mt-0.5">{{ b.origin }} → {{ b.destination }}</div>
+              <div class="text-[10px] text-slate-400">{{ b.travelDate }}</div>
+            </td>
+
+            <!-- Bag Tag & Type -->
+            <td class="py-3.5 px-4">
+              <div class="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 inline-block">
+                {{ b.bagTagNumber }}
+              </div>
+              <div class="mt-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold"
+                      [class.bg-slate-100]="b.baggageType === 'REGULAR'"
+                      [class.text-slate-600]="b.baggageType === 'REGULAR'"
+                      [class.bg-purple-100]="b.baggageType === 'SPECIAL'"
+                      [class.text-purple-800]="b.baggageType === 'SPECIAL'">
+                  {{ b.baggageType === 'SPECIAL' ? 'Special Luggage' : 'Regular Luggage' }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Allowance -->
+            <td class="py-3.5 px-4">
+              <div class="font-bold text-slate-800">{{ b.baggageAllowance }} kg</div>
+              <div class="text-[10px] text-slate-500 font-medium">{{ b.bagsAllowed }} {{ b.bagsAllowed === 1 ? 'bag' : 'bags' }} allowed</div>
+            </td>
+
+            <!-- Actual & Extra Weight -->
+            <td class="py-3.5 px-4">
+              <div class="font-bold text-slate-900">{{ b.actualBaggageWeight }} kg</div>
+              <div *ngIf="b.extraBaggageWeight > 0" class="text-[11px] font-bold text-amber-600 flex items-center gap-1 mt-0.5">
+                <span>⚠️ +{{ b.extraBaggageWeight }} kg excess</span>
+              </div>
+              <div *ngIf="b.extraBaggageWeight <= 0" class="text-[10px] font-semibold text-emerald-600 mt-0.5">
+                ✓ Within limit
+              </div>
+            </td>
+
+            <!-- Extra Baggage Fee -->
+            <td class="py-3.5 px-4">
+              <div *ngIf="b.extraBaggageFee > 0" class="font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-200 inline-block">
+                {{ b.extraBaggageFee | currencyFormatter }}
+              </div>
+              <div *ngIf="b.extraBaggageFee <= 0" class="font-semibold text-slate-400">
+                ₹0 (No Excess)
+              </div>
+            </td>
+
+            <!-- Check-in Location & Time -->
+            <td class="py-3.5 px-4">
+              <div class="font-semibold text-slate-800">{{ b.counterLocation }}</div>
+              <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
+                <span>🕒</span> {{ b.checkInTime || 'Pending' }}
+              </div>
+            </td>
+
+            <!-- Special Handling -->
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border inline-block"
+                    [ngClass]="getHandlingBadgeClass(b.specialHandling)">
+                {{ getHandlingLabel(b.specialHandling) }}
+              </span>
+            </td>
+
+            <!-- Baggage Status -->
+            <td class="py-3.5 px-4" (click)="$event.stopPropagation()">
+              <select [ngModel]="b.baggageStatus" 
+                      (ngModelChange)="quickUpdateStatus(b, $event)"
+                      class="px-2.5 py-1 rounded-lg text-xs font-bold border outline-none cursor-pointer shadow-sm transition-all"
+                      [ngClass]="getStatusBadgeClass(b.baggageStatus)">
+                <option value="NOT_CHECKED_IN">Not Checked In</option>
+                <option value="CHECKED_IN">Checked In</option>
+                <option value="LOADED">Loaded in Hold</option>
+                <option value="UNLOADED">Unloaded</option>
+                <option value="DELIVERED">Delivered to Belt</option>
+                <option value="LOST_OR_DELAYED">Lost / Delayed</option>
+              </select>
+            </td>
+
+            <!-- Actions -->
+            <td class="py-3.5 px-5 text-right space-x-1" (click)="$event.stopPropagation()">
+              <button (click)="openPrintTag(b)" 
+                      title="Print Luggage Tag"
+                      class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors border border-slate-200">
+                🏷️
+              </button>
+              <button (click)="openEditBaggage(b)" 
+                      class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg border border-blue-200 text-xs transition-colors">
+                Manage
+              </button>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="paginatedBaggage.length === 0">
+            <td colspan="10" class="py-12 text-center text-slate-400">
+              <div class="text-3xl mb-2">🧳</div>
+              <p class="font-bold text-sm text-slate-600">No baggage records matched the filter criteria.</p>
+              <p class="text-xs text-slate-400 mt-1">Try resetting search filters or perform a new counter check-in.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Baggage Table Pagination Footer -->
+    <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
+      
+      <!-- Page Size Selector & Showing Counter -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span>Rows per page:</span>
+          <select [(ngModel)]="baggagePageSize" 
+                  (ngModelChange)="onBaggagePageSizeChange($event)"
+                  class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-bold outline-none focus:border-blue-600">
+            <option *ngFor="let size of baggagePageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+        <span class="text-slate-400">|</span>
+        <span>
+          Showing <strong class="text-slate-800">{{ baggageStartItemIndex }}</strong> - <strong class="text-slate-800">{{ baggageEndItemIndex }}</strong> of <strong class="text-slate-800">{{ filteredBaggage.length }}</strong> baggage records
+        </span>
+      </div>
+
+      <!-- Pagination Buttons -->
+      <div class="flex items-center gap-1.5">
+        <button (click)="prevBaggagePage()" 
+                [disabled]="baggageCurrentPage === 1"
+                class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+          ← Previous
+        </button>
+
+        <div class="flex items-center gap-1">
+          <button *ngFor="let p of baggagePageNumbers"
+                  (click)="setBaggagePage(p)"
+                  [class.bg-blue-600]="baggageCurrentPage === p"
+                  [class.text-white]="baggageCurrentPage === p"
+                  [class.border-blue-600]="baggageCurrentPage === p"
+                  [class.bg-white]="baggageCurrentPage !== p"
+                  [class.text-slate-700]="baggageCurrentPage !== p"
+                  class="w-7 h-7 rounded-lg border border-slate-200 font-bold text-xs flex items-center justify-center hover:bg-slate-100 transition-all">
+            {{ p }}
+          </button>
+        </div>
+
+        <button (click)="nextBaggagePage()" 
+                [disabled]="baggageCurrentPage === baggageTotalPages"
+                class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+          Next →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- SECTION 2: FLIGHT SCHEDULE & GATE/DELAY WITH PAGINATION                   -->
+  <!-- ========================================================================= -->
+  <div *ngIf="activeTab === 'flights' || activeTab === 'all'" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Flight Schedule Table (8 Columns) -->
+    <div class="lg:col-span-8 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden space-y-0">
+      
+      <!-- Flight Table Header & Filters Toolbar -->
+      <div class="p-6 border-b border-slate-100 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xl">✈️</span>
+              <h2 class="text-lg font-black text-slate-900 tracking-tight">Today's Flight Departures & Arrivals</h2>
+            </div>
+            <span class="text-xs font-bold text-slate-400">Total {{ filteredFlights.length }} Scheduled Flights</span>
+          </div>
+
+          <!-- Flight Filters Toolbar -->
+          <div class="flex items-center gap-2">
+            <input type="text" 
+                   [(ngModel)]="flightSearchTerm" 
+                   (input)="onFlightFilterChange()"
+                   placeholder="Search Flight #, Route..."
+                   class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-blue-600 transition-all">
+            
+            <select [(ngModel)]="flightStatusFilter" 
+                    (change)="onFlightFilterChange()"
+                    class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-blue-600 transition-all">
+              <option value="ALL">All Statuses</option>
+              <option value="SCHEDULED">Scheduled</option>
+              <option value="BOARDING">Boarding</option>
+              <option value="ON_TIME">On Time</option>
+              <option value="DELAYED">Delayed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flights Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-extrabold border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-6">Flight #</th>
+              <th class="py-3 px-6">Airline</th>
+              <th class="py-3 px-6">Route</th>
+              <th class="py-3 px-6">Time</th>
+              <th class="py-3 px-6">Gate</th>
+              <th class="py-3 px-6">Status</th>
+              <th class="py-3 px-6 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let f of paginatedFlights" 
+                [class.bg-blue-50]="selectedFlight?.id === f.id" 
+                class="hover:bg-slate-50 transition-colors cursor-pointer"
+                (click)="selectFlight(f)">
+              <td class="py-4 px-6 font-mono font-bold text-blue-600">{{ f.flightNumber }}</td>
+              <td class="py-4 px-6 font-bold text-slate-800">{{ f.airline }}</td>
+              <td class="py-4 px-6 font-semibold">{{ f.source || f.origin }} → {{ f.destination }}</td>
+              <td class="py-4 px-6 text-slate-600">{{ f.departureTime }}</td>
+              <td class="py-4 px-6 font-bold text-blue-600">{{ f.gate || 'TBD' }}</td>
+              <td class="py-4 px-6">
+                <span [appStatusBadge]="f.status">{{ f.status }}</span>
+              </td>
+              <td class="py-4 px-6 text-right">
+                <button (click)="selectFlight(f); $event.stopPropagation()"
+                        class="px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg border border-blue-200">
+                  Manage
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngFor="let empty of [].constructor(0)"></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Flight Table Pagination Footer -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2">
+            <span>Rows:</span>
+            <select [(ngModel)]="flightPageSize" 
+                    (ngModelChange)="onFlightPageSizeChange($event)"
+                    class="bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold outline-none focus:border-blue-600">
+              <option *ngFor="let size of flightPageSizeOptions" [value]="size">{{ size }}</option>
+            </select>
+          </div>
+          <span class="text-slate-400">|</span>
+          <span>
+            Showing <strong class="text-slate-800">{{ flightStartItemIndex }}</strong> - <strong class="text-slate-800">{{ flightEndItemIndex }}</strong> of <strong class="text-slate-800">{{ filteredFlights.length }}</strong> flights
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button (click)="prevFlightPage()" 
+                  [disabled]="flightCurrentPage === 1"
+                  class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+            ← Prev
+          </button>
+
+          <div class="flex items-center gap-1">
+            <button *ngFor="let p of flightPageNumbers"
+                    (click)="setFlightPage(p)"
+                    [class.bg-blue-600]="flightCurrentPage === p"
+                    [class.text-white]="flightCurrentPage === p"
+                    [class.border-blue-600]="flightCurrentPage === p"
+                    [class.bg-white]="flightCurrentPage !== p"
+                    [class.text-slate-700]="flightCurrentPage !== p"
+                    class="w-7 h-7 rounded-lg border border-slate-200 font-bold text-xs flex items-center justify-center hover:bg-slate-100 transition-all">
+              {{ p }}
+            </button>
+          </div>
+
+          <button (click)="nextFlightPage()" 
+                  [disabled]="flightCurrentPage === flightTotalPages"
+                  class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+            Next →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Operations Control Panel (4 Columns) -->
+    <div class="lg:col-span-4 space-y-6">
+      <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+        <h3 class="text-base font-black text-slate-900">Gate & Delay Dispatch</h3>
+
+        <div *ngIf="selectedFlight; else noSelection" class="space-y-4">
+          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+            <span class="text-xs font-bold text-slate-400 block uppercase">Selected Flight</span>
+            <div class="text-lg font-black text-slate-900">{{ selectedFlight.airline }} ({{ selectedFlight.flightNumber }})</div>
+            <div class="text-xs font-semibold text-blue-600">{{ selectedFlight.source || selectedFlight.origin }} → {{ selectedFlight.destination }}</div>
+          </div>
+
+          <!-- Assign Gate -->
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-700">Assign Gate / Terminal</label>
+            <div class="flex gap-2">
+              <input type="text" [(ngModel)]="newGate" placeholder="e.g. Gate 12A, Terminal 3"
+                     class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-blue-600">
+              <button (click)="updateGate()" class="btn btn-primary btn-sm px-4 py-2 bg-blue-600 text-white rounded-xl font-bold">Save</button>
+            </div>
+          </div>
+
+          <!-- Broadcast Delay -->
+          <div class="space-y-2 pt-2 border-t border-slate-100">
+            <label class="text-xs font-bold text-slate-700">Broadcast Schedule Delay (mins)</label>
+            <input type="number" [(ngModel)]="delayMinutes" min="5" step="5" placeholder="e.g. 30"
+                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-blue-600">
+            <input type="text" [(ngModel)]="delayReason" placeholder="Reason (e.g. Weather / ATC Clearance)"
+                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-blue-600">
+            <button (click)="postDelay()" [disabled]="delayMinutes <= 0"
+                    class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md disabled:opacity-50 transition-all">
+              Announce Flight Delay
+            </button>
+          </div>
+        </div>
+
+        <ng-template #noSelection>
+          <div class="p-8 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">
+            <p class="text-xs font-bold">Select any flight from the schedule table to configure gate or broadcast delays.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: CHECK-IN BAGGAGE DETAILS & EDIT DRAWER/MODAL                     -->
+  <!-- ========================================================================= -->
+  <div *ngIf="isEditModalOpen && selectedBaggage" 
+       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-3xl w-full border border-slate-200 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Modal Header -->
+      <div class="p-6 bg-gradient-to-r from-slate-900 to-blue-950 text-white flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-[11px] font-bold text-blue-300">
+            <span>🏷️</span> Bag Tag: {{ selectedBaggage.bagTagNumber }}
+          </div>
+          <h3 class="text-xl font-black">Check-in Baggage Details & Control</h3>
+          <p class="text-xs text-slate-300">Passenger {{ selectedBaggage.passengerName }} (PNR: {{ selectedBaggage.bookingReference }})</p>
+        </div>
+        <button (click)="closeEditModal()" 
+                class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center transition-all">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Body (All 16 Requested Baggage Fields) -->
+      <div class="p-6 md:p-8 space-y-6 max-h-[75vh] overflow-y-auto">
+        
+        <!-- Field Group 1: Flight & Passenger Profile -->
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
+          <h4 class="text-xs font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <span>✈️</span> Passenger & Travel Route
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
+            <div>
+              <span class="text-slate-400 font-semibold block">Passenger Name</span>
+              <strong class="text-slate-900 text-sm">{{ selectedBaggage.passengerName }}</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block">Booking ID / PNR</span>
+              <strong class="text-blue-600 font-mono text-sm">{{ selectedBaggage.bookingReference }}</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block">Flight Number</span>
+              <strong class="text-slate-900 font-mono text-sm">{{ selectedBaggage.flightNumber }}</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block">Travel Date</span>
+              <strong class="text-slate-800">{{ selectedBaggage.travelDate }}</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block">Origin → Destination</span>
+              <strong class="text-slate-800">{{ selectedBaggage.origin }} → {{ selectedBaggage.destination }}</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 font-semibold block">Seat Number</span>
+              <strong class="text-slate-800">{{ selectedBaggage.seatNumber || 'N/A' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Field Group 2: Baggage Quota, Physical Weight & Excess Fee -->
+        <div class="space-y-4">
+          <h4 class="text-xs font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <span>⚖️</span> Baggage Allowance, Weight & Excess Fee
+          </h4>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- Baggage Allowance -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Baggage Allowance (kg)</label>
+              <input type="number" 
+                     [(ngModel)]="editForm.baggageAllowance" 
+                     (input)="onWeightInputChange()"
+                     min="0" step="1"
+                     class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+              <span class="text-[10px] text-slate-400">Standard allowance quota</span>
+            </div>
+
+            <!-- Number of Bags Allowed -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Number of Bags Allowed</label>
+              <input type="number" 
+                     [(ngModel)]="editForm.bagsAllowed" 
+                     min="1" max="10"
+                     class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+              <span class="text-[10px] text-slate-400">e.g. 1 bag, 2 bags</span>
+            </div>
+
+            <!-- Actual Baggage Weight -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Actual Baggage Weight (kg)</label>
+              <input type="number" 
+                     [(ngModel)]="editForm.actualBaggageWeight" 
+                     (input)="onWeightInputChange()"
+                     min="0" step="0.1"
+                     class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+              <span class="text-[10px] text-slate-400">Measured on terminal scale</span>
+            </div>
+          </div>
+
+          <!-- Computed Excess Metrics Banner -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl border"
+               [class.bg-amber-50]="(editForm.extraBaggageWeight || 0) > 0"
+               [class.border-amber-200]="(editForm.extraBaggageWeight || 0) > 0"
+               [class.bg-emerald-50]="(editForm.extraBaggageWeight || 0) <= 0"
+               [class.border-emerald-200]="(editForm.extraBaggageWeight || 0) <= 0">
+            <div>
+              <span class="text-xs font-bold block"
+                    [class.text-amber-800]="(editForm.extraBaggageWeight || 0) > 0"
+                    [class.text-emerald-800]="(editForm.extraBaggageWeight || 0) <= 0">
+                Extra Baggage Weight
+              </span>
+              <div class="text-xl font-black mt-0.5"
+                   [class.text-amber-700]="(editForm.extraBaggageWeight || 0) > 0"
+                   [class.text-emerald-700]="(editForm.extraBaggageWeight || 0) <= 0">
+                {{ editForm.extraBaggageWeight || 0 }} kg
+              </div>
+              <span class="text-[10px]"
+                    [class.text-amber-600]="(editForm.extraBaggageWeight || 0) > 0"
+                    [class.text-emerald-600]="(editForm.extraBaggageWeight || 0) <= 0">
+                {{ (editForm.extraBaggageWeight || 0) > 0 ? 'Exceeds standard allowance quota' : 'Within airline allowance' }}
+              </span>
+            </div>
+
+            <div>
+              <span class="text-xs font-bold block"
+                    [class.text-amber-800]="(editForm.extraBaggageWeight || 0) > 0"
+                    [class.text-emerald-800]="(editForm.extraBaggageWeight || 0) <= 0">
+                Extra Baggage Fee
+              </span>
+              <div class="text-xl font-black mt-0.5"
+                   [class.text-amber-700]="(editForm.extraBaggageWeight || 0) > 0"
+                   [class.text-emerald-700]="(editForm.extraBaggageWeight || 0) <= 0">
+                {{ editForm.extraBaggageFee | currencyFormatter }}
+              </div>
+              <span class="text-[10px] text-slate-500">Tariff: ₹500 per excess kg</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Field Group 3: Operations, Counter & Logistics -->
+        <div class="space-y-4">
+          <h4 class="text-xs font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <span>🏢</span> Counter, Handling & Status Workflow
+          </h4>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Bag Tag Number -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Bag Tag Number</label>
+              <input type="text" 
+                     [(ngModel)]="editForm.bagTagNumber" 
+                     class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-sm font-bold outline-none focus:border-blue-600">
+            </div>
+
+            <!-- Counter / Location -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Counter / Check-in Location</label>
+              <input type="text" 
+                     [(ngModel)]="editForm.counterLocation" 
+                     placeholder="e.g. Terminal 3 - Counter T3-B14"
+                     class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-600">
+            </div>
+
+            <!-- Baggage Status -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Baggage Status</label>
+              <select [(ngModel)]="editForm.baggageStatus" 
+                      class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+                <option value="NOT_CHECKED_IN">Not Checked In</option>
+                <option value="CHECKED_IN">Checked In</option>
+                <option value="LOADED">Loaded in Hold</option>
+                <option value="UNLOADED">Unloaded</option>
+                <option value="DELIVERED">Delivered to Belt</option>
+                <option value="LOST_OR_DELAYED">Lost / Delayed</option>
+              </select>
+            </div>
+
+            <!-- Check-in Time -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Check-in Time</label>
+              <input type="text" 
+                     [(ngModel)]="editForm.checkInTime" 
+                     class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-600">
+            </div>
+
+            <!-- Baggage Type -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Baggage Type</label>
+              <select [(ngModel)]="editForm.baggageType" 
+                      class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+                <option value="REGULAR">Regular Luggage</option>
+                <option value="SPECIAL">Special Luggage</option>
+              </select>
+            </div>
+
+            <!-- Special Handling -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Special Handling</label>
+              <select [(ngModel)]="editForm.specialHandling" 
+                      class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+                <option value="NONE">Standard Handling</option>
+                <option value="FRAGILE">Fragile / Priority</option>
+                <option value="WHEELCHAIR">Wheelchair equipment</option>
+                <option value="SPORTS_EQUIPMENT">Sports equipment</option>
+                <option value="MUSICAL_INSTRUMENT">Musical instrument</option>
+                <option value="MEDICAL_SUPPLIES">Medical supplies</option>
+                <option value="HAZARDOUS_INSPECTED">Hazardous Inspection</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Staff Remarks -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-700">Staff Inspection Remarks</label>
+            <textarea [(ngModel)]="editForm.remarks" 
+                      rows="2"
+                      placeholder="Add inspection notes, gate check-in alerts, or priority routing comments..."
+                      class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-blue-600"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer Actions -->
+      <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <button (click)="openPrintTag(selectedBaggage)" 
+                class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs flex items-center gap-2 transition-all">
+          <span>🏷️</span> Preview & Print Bag Tag
+        </button>
+
+        <div class="flex items-center gap-3">
+          <button (click)="closeEditModal()" 
+                  class="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-xs transition-all">
+            Cancel
+          </button>
+          <button (click)="saveEditBaggage()" 
+                  class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all">
+            Save & Update Details
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: COUNTER CHECK-IN & TAG REGISTRATION                              -->
+  <!-- ========================================================================= -->
+  <div *ngIf="isCounterCheckInOpen" 
+       class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Modal Header -->
+      <div class="p-6 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex items-center justify-between">
+        <div>
+          <h3 class="text-xl font-black">Counter Check-in & Baggage Tagging</h3>
+          <p class="text-xs text-blue-100 mt-0.5">Weigh luggage, verify passenger credentials, and issue automated barcode bag tags.</p>
+        </div>
+        <button (click)="closeCounterCheckIn()" 
+                class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center transition-all">
+          ✕
+        </button>
+      </div>
+
+      <!-- Form Body -->
+      <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Passenger Name -->
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700">Passenger Full Name *</label>
+            <input type="text" [(ngModel)]="newCheckIn.passengerName" placeholder="e.g. Rohit Deshmukh"
+                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:border-blue-600">
+          </div>
+
+          <!-- Booking ID / PNR -->
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700">Booking ID / PNR *</label>
+            <input type="text" [(ngModel)]="newCheckIn.bookingReference" placeholder="e.g. BK-98210"
+                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold outline-none focus:border-blue-600">
+          </div>
+
+          <!-- Flight Number -->
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700">Flight Number *</label>
+            <select [(ngModel)]="newCheckIn.flightNumber" 
+                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+              <option *ngFor="let f of flights" [value]="f.flightNumber">{{ f.flightNumber }} ({{ f.source || f.origin }} → {{ f.destination }})</option>
+            </select>
+          </div>
+
+          <!-- Travel Date -->
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700">Travel Date</label>
+            <input type="date" [(ngModel)]="newCheckIn.travelDate"
+                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:border-blue-600">
+          </div>
+
+          <!-- Origin & Destination -->
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700">Origin Airport Code</label>
+            <input type="text" [(ngModel)]="newCheckIn.origin" placeholder="DEL"
+                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600 uppercase">
+          </div>
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700">Destination Airport Code</label>
+            <input type="text" [(ngModel)]="newCheckIn.destination" placeholder="BOM"
+                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600 uppercase">
+          </div>
+
+          <!-- Allowance & Actual Weight -->
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700">Baggage Allowance (kg)</label>
+            <input type="number" [(ngModel)]="newCheckIn.baggageAllowance" min="0" step="1"
+                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+          </div>
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700">Actual Measured Weight (kg) *</label>
+            <input type="number" [(ngModel)]="newCheckIn.actualBaggageWeight" min="0" step="0.1"
+                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+          </div>
+
+          <!-- Counter Location -->
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700">Check-in Counter Location</label>
+            <input type="text" [(ngModel)]="newCheckIn.counterLocation" placeholder="Terminal 3 - Counter T3-B14"
+                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-600">
+          </div>
+
+          <!-- Baggage Type -->
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-700">Baggage Type</label>
+            <select [(ngModel)]="newCheckIn.baggageType" 
+                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+              <option value="REGULAR">Regular Luggage</option>
+              <option value="SPECIAL">Special Luggage</option>
+            </select>
+          </div>
+
+          <!-- Special Handling -->
+          <div class="space-y-1 sm:col-span-2">
+            <label class="text-xs font-bold text-slate-700">Special Handling Instructions</label>
+            <select [(ngModel)]="newCheckIn.specialHandling" 
+                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-600">
+              <option value="NONE">Standard Handling</option>
+              <option value="FRAGILE">Fragile / Priority</option>
+              <option value="WHEELCHAIR">Wheelchair equipment</option>
+              <option value="SPORTS_EQUIPMENT">Sports equipment</option>
+              <option value="MUSICAL_INSTRUMENT">Musical instrument</option>
+              <option value="HAZARDOUS_INSPECTED">Hazardous Inspection</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Live Calculation Preview -->
+        <div class="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between text-xs">
+          <div>
+            <span class="text-slate-500 font-semibold block">Excess Baggage:</span>
+            <strong class="text-sm font-bold" [class.text-amber-600]="calculatedNewExtraWeight > 0" [class.text-emerald-700]="calculatedNewExtraWeight <= 0">
+              {{ calculatedNewExtraWeight }} kg
+            </strong>
+          </div>
+          <div>
+            <span class="text-slate-500 font-semibold block">Excess Fee Payable:</span>
+            <strong class="text-base font-black text-blue-700">
+              {{ calculatedNewExtraFee | currencyFormatter }}
+            </strong>
+          </div>
+          <div>
+            <span class="text-slate-500 font-semibold block">Status on Issue:</span>
+            <span class="px-2 py-0.5 rounded bg-blue-600 text-white font-bold text-[10px]">Checked In</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-6 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
+        <button (click)="closeCounterCheckIn()" 
+                class="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-xs transition-all">
+          Cancel
+        </button>
+        <button (click)="submitCounterCheckIn()" 
+                class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all">
+          Complete Check-in & Tag Bag
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 3: AIRLINE LUGGAGE BAG TAG PRINT STICKER                            -->
+  <!-- ========================================================================= -->
+  <div *ngIf="isTagModalOpen && selectedTagBaggage" 
+       class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Thermal Tag Header -->
+      <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-300">Terminal Baggage Tag Generator</span>
+        <button (click)="closePrintTag()" class="text-white hover:text-slate-300 font-bold text-sm">✕</button>
+      </div>
+
+      <!-- Realistic Airline Luggage Tag Visual -->
+      <div class="p-6 bg-amber-50/50 flex justify-center">
+        <div class="w-72 bg-white border-2 border-slate-800 rounded-2xl shadow-xl overflow-hidden p-5 space-y-4 font-mono text-slate-900 border-dashed">
+          
+          <!-- Tag Header -->
+          <div class="flex items-center justify-between border-b-2 border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <img src="assets/icons/skywings-icon.svg" alt="SkyWings" class="w-6 h-6 rounded-md">
+              <span class="font-black text-sm tracking-widest uppercase">SKYWINGS</span>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-900 text-white rounded">BAGGAGE TAG</span>
+          </div>
+
+          <!-- Destination Big Letters -->
+          <div class="text-center py-2 border-b-2 border-slate-800">
+            <div class="text-[10px] text-slate-500 tracking-wider">FINAL DESTINATION</div>
+            <div class="text-5xl font-black tracking-widest text-slate-900">{{ selectedTagBaggage.destination }}</div>
+            <div class="text-xs font-bold text-slate-600 mt-1">VIA {{ selectedTagBaggage.origin }}</div>
+          </div>
+
+          <!-- Flight & Passenger Details -->
+          <div class="grid grid-cols-2 gap-2 text-xs border-b-2 border-slate-800 pb-3">
+            <div>
+              <span class="text-[9px] text-slate-400 block">FLIGHT</span>
+              <strong class="font-bold text-sm">{{ selectedTagBaggage.flightNumber }}</strong>
+            </div>
+            <div>
+              <span class="text-[9px] text-slate-400 block">DATE</span>
+              <strong class="font-bold text-xs">{{ selectedTagBaggage.travelDate }}</strong>
+            </div>
+            <div class="col-span-2">
+              <span class="text-[9px] text-slate-400 block">PASSENGER NAME</span>
+              <strong class="font-bold text-sm truncate block">{{ selectedTagBaggage.passengerName | uppercase }}</strong>
+            </div>
+            <div>
+              <span class="text-[9px] text-slate-400 block">PNR / BOOKING</span>
+              <strong class="font-bold text-xs">{{ selectedTagBaggage.bookingReference }}</strong>
+            </div>
+            <div>
+              <span class="text-[9px] text-slate-400 block">WEIGHT</span>
+              <strong class="font-bold text-sm text-blue-700">{{ selectedTagBaggage.actualBaggageWeight }} KG</strong>
+            </div>
+          </div>
+
+          <!-- Special Handling Banner on Tag -->
+          <div *ngIf="selectedTagBaggage.specialHandling !== 'NONE'" 
+               class="text-center py-1.5 px-2 bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded border border-amber-600">
+            ★ {{ getHandlingLabel(selectedTagBaggage.specialHandling) }} ★
+          </div>
+
+          <!-- Barcode Graphic Pattern -->
+          <div class="text-center pt-2 space-y-1">
+            <div class="w-full h-12 bg-[repeating-linear-gradient(90deg,#000,#000_2px,transparent_2px,transparent_4px,#000_4px,#000_7px,transparent_7px,transparent_9px,#000_9px,#000_10px,transparent_10px,transparent_13px)] rounded"></div>
+            <div class="text-xs font-bold tracking-widest text-slate-800">{{ selectedTagBaggage.bagTagNumber }}</div>
+            <div class="text-[9px] text-slate-400">ISSUED AT {{ selectedTagBaggage.counterLocation | uppercase }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+        <button (click)="closePrintTag()" class="btn btn-secondary text-xs font-bold px-4 py-2 border rounded-xl">
+          Close
+        </button>
+        <button (click)="printCurrentTag()" 
+                class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-2 shadow-md">
+          <span>🖨️</span> Print Luggage Tag
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

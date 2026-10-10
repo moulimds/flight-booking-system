@@ -1,0 +1,273 @@
+<div class="p-8 max-w-4xl mx-auto space-y-6">
+  
+  <!-- Header -->
+  <div class="text-center space-y-1">
+    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2 shadow-sm">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+      </svg>
+    </div>
+    <h2 class="text-3xl font-black text-slate-900 tracking-tight">Payment Method & Authorization</h2>
+    <p class="text-xs text-slate-500">
+      Booking Reference (PNR): 
+      <span class="font-mono font-bold text-blue-600">
+        {{ allBookingReferences ? allBookingReferences : bookingReference }}
+      </span>
+      <span *ngIf="tripType && tripType !== 'ONE_WAY'" class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+        {{ tripType }}
+      </span>
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- LEFT COLUMN: Multi-Passenger Order Summary -->
+    <div class="lg:col-span-1 space-y-4">
+      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">Order Breakdown</h3>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+            Pending Payment
+          </span>
+        </div>
+
+        <!-- Passengers List -->
+        <div class="space-y-2">
+          <div *ngIf="booking?.passengers && booking!.passengers.length > 0" class="space-y-2">
+            <div *ngFor="let p of booking!.passengers; let i = index" class="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-800">{{ i + 1 }}. {{ p.fullName }}</span>
+                <span class="text-xs font-black text-slate-900">{{ p.fareAmount | currencyFormatter }}</span>
+              </div>
+              <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                <span>Seat {{ p.seatNumber }} • {{ p.travelClass }}</span>
+                <span>Age {{ p.age }}</span>
+              </div>
+              <div *ngIf="p.mealName" class="flex items-center justify-between text-[10px] font-bold text-amber-900 bg-amber-50/80 px-2 py-0.5 rounded border border-amber-200 mt-1">
+                <span class="flex items-center gap-1">
+                  <span>🍱</span>
+                  <span>{{ p.mealName }}</span>
+                </span>
+                <span *ngIf="p.mealPrice && p.mealPrice > 0" class="text-emerald-700 font-mono">+₹{{ p.mealPrice }}</span>
+                <span *ngIf="!p.mealPrice || p.mealPrice === 0" class="text-slate-400">FREE</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fallback single passenger if not loaded yet -->
+          <div *ngIf="!booking?.passengers || booking!.passengers.length === 0" class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-800">{{ booking?.passengerName || 'Passenger Reservation' }}</span>
+              <span class="text-xs font-black text-slate-900">{{ amount | currencyFormatter }}</span>
+            </div>
+            <div class="text-[10px] text-slate-500 font-mono mt-1">
+              Seat {{ booking?.seatNumber || 'Allocated' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Fare Calculation -->
+        <div class="pt-3 border-t border-slate-100 space-y-1.5">
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <span>Base Passenger Fares</span>
+            <span class="font-bold text-slate-700">{{ (amount - (booking?.mealTotalAmount || 0)) | currencyFormatter }}</span>
+          </div>
+          <div *ngIf="booking?.mealTotalAmount && booking!.mealTotalAmount > 0" class="flex items-center justify-between text-xs text-slate-500">
+            <span>In-Flight Dining & Meals</span>
+            <span class="font-bold text-amber-800">+{{ booking!.mealTotalAmount | currencyFormatter }}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <span>Taxes & Airline Surcharges</span>
+            <span class="font-bold text-emerald-600">Included (₹0)</span>
+          </div>
+          <div class="flex items-center justify-between text-sm font-black text-slate-900 pt-2 border-t border-dashed border-slate-200">
+            <span>Total Payable</span>
+            <span class="text-xl text-blue-700 font-black">{{ amount | currencyFormatter }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-xs text-blue-900 space-y-1.5">
+        <div class="font-bold flex items-center gap-1.5">
+          <span>📧</span> Instant Email & PDF Notification
+        </div>
+        <p class="text-[11px] text-blue-800 leading-relaxed">
+          Upon payment confirmation, your E-Ticket with Boarding Pass and official GST Tax Invoice PDFs are automatically sent to <span class="font-bold font-mono">sindhusakthi41&#64;gmail.com</span>.
+        </p>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Payment Method & Payment Gateway -->
+    <div class="lg:col-span-2">
+      <div class="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-sm space-y-6">
+        
+        <!-- Payment Methods Selector -->
+        <div>
+          <label class="block text-xs font-black uppercase text-slate-500 tracking-wider mb-2">Select Payment Method</label>
+          <div class="grid grid-cols-3 gap-3">
+            <button type="button" (click)="selectedMethod = 'UPI'"
+                    [class.border-blue-600]="selectedMethod === 'UPI'"
+                    [class.bg-blue-50]="selectedMethod === 'UPI'"
+                    [class.text-blue-900]="selectedMethod === 'UPI'"
+                    class="p-4 rounded-2xl border-2 border-slate-200 font-bold text-xs flex flex-col items-center gap-1.5 transition-all hover:border-blue-300">
+              <span class="text-2xl">📱</span>
+              <span>UPI / QR Scan</span>
+            </button>
+            <button type="button" (click)="selectedMethod = 'NET_BANKING'"
+                    [class.border-blue-600]="selectedMethod === 'NET_BANKING'"
+                    [class.bg-blue-50]="selectedMethod === 'NET_BANKING'"
+                    [class.text-blue-900]="selectedMethod === 'NET_BANKING'"
+                    class="p-4 rounded-2xl border-2 border-slate-200 font-bold text-xs flex flex-col items-center gap-1.5 transition-all hover:border-blue-300">
+              <span class="text-2xl">🏦</span>
+              <span>Net Banking</span>
+            </button>
+            <button type="button" (click)="selectedMethod = 'CARD'"
+                    [class.border-blue-600]="selectedMethod === 'CARD'"
+                    [class.bg-blue-50]="selectedMethod === 'CARD'"
+                    [class.text-blue-900]="selectedMethod === 'CARD'"
+                    class="p-4 rounded-2xl border-2 border-slate-200 font-bold text-xs flex flex-col items-center gap-1.5 transition-all hover:border-blue-300">
+              <span class="text-2xl">💳</span>
+              <span>Credit / Debit Card</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. UPI PAYMENT FORM -->
+        <div *ngIf="selectedMethod === 'UPI'" class="space-y-5 py-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+            
+            <!-- QR Code Box -->
+            <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-2">
+              <div class="w-36 h-36 bg-slate-900 text-white rounded-xl mx-auto flex flex-col items-center justify-center p-3 shadow-inner">
+                <span class="text-2xl mb-1">📱</span>
+                <span class="font-mono text-[10px] text-sky-400 font-bold">BHIM • GooglePay</span>
+                <span class="font-mono text-[9px] text-slate-300">Scan to Pay</span>
+                <span class="font-mono text-[10px] text-emerald-400 font-bold">{{ amount | currencyFormatter }}</span>
+              </div>
+              <p class="text-[11px] text-slate-500 font-mono">skywings.pay&#64;hdfcbank</p>
+            </div>
+
+            <!-- UPI ID Input -->
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Enter UPI ID / VPA</label>
+                <div class="relative">
+                  <input type="text" [(ngModel)]="upiId"
+                         placeholder="username@okhdfcbank"
+                         class="w-full p-3.5 pr-20 rounded-2xl border border-slate-300 font-mono text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20">
+                  <span class="absolute right-3 top-3.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                    VERIFIED
+                  </span>
+                </div>
+              </div>
+
+              <!-- Quick handles -->
+              <div class="space-y-1">
+                <span class="text-[10px] font-bold uppercase text-slate-400">Quick App Select</span>
+                <div class="flex flex-wrap gap-1.5">
+                  <button type="button" (click)="upiId = 'sindhusakthi41@okhdfcbank'" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-[10px] font-bold text-slate-700">Google Pay</button>
+                  <button type="button" (click)="upiId = 'sindhusakthi41@ybl'" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-[10px] font-bold text-slate-700">PhonePe</button>
+                  <button type="button" (click)="upiId = 'sindhusakthi41@paytm'" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-[10px] font-bold text-slate-700">Paytm</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div>
+            <button (click)="onPay()" [disabled]="isPaying"
+                    class="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-base font-bold shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-2">
+              <span *ngIf="!isPaying">Verify UPI & Pay {{ amount | currencyFormatter }} (Confirm Booking)</span>
+              <span *ngIf="isPaying" class="flex items-center justify-center gap-2">
+                <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Verifying UPI Transaction & Issuing Tickets...
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. NET BANKING FORM -->
+        <div *ngIf="selectedMethod === 'NET_BANKING'" class="space-y-5 py-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-2">Select Your Bank</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div *ngFor="let bank of availableBanks"
+                   (click)="selectBank(bank.name)"
+                   [class.border-blue-600]="selectedBank === bank.name"
+                   [class.bg-blue-50]="selectedBank === bank.name"
+                   [class.text-blue-900]="selectedBank === bank.name"
+                   class="p-3.5 rounded-2xl border-2 border-slate-200 text-center text-xs font-bold cursor-pointer transition-all hover:border-blue-300 flex items-center justify-between">
+                <span>{{ bank.name }}</span>
+                <span *ngIf="selectedBank === bank.name" class="text-blue-600 text-sm">✓</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs text-slate-600 flex items-center justify-between">
+            <span>Selected Bank: <strong class="text-slate-900">{{ selectedBank }}</strong></span>
+            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">Instant Gateway</span>
+          </div>
+
+          <div>
+            <button (click)="onPay()" [disabled]="isPaying"
+                    class="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-base font-bold shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center gap-2">
+              <span *ngIf="!isPaying">Pay {{ amount | currencyFormatter }} via {{ selectedBank }} & Confirm</span>
+              <span *ngIf="isPaying" class="flex items-center justify-center gap-2">
+                <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Redirecting to {{ selectedBank }}...
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. CARD PAYMENT FORM -->
+        <form *ngIf="selectedMethod === 'CARD'" [formGroup]="cardForm" (ngSubmit)="onPay()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Cardholder Name</label>
+            <input type="text" formControlName="cardholderName"
+                   placeholder="Sindhu Sakthi"
+                   class="w-full p-3.5 rounded-2xl border border-slate-300 font-bold text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Card Number</label>
+            <input type="text" formControlName="cardNumber"
+                   placeholder="4532 8901 2345 8921"
+                   class="w-full p-3.5 rounded-2xl border border-slate-300 font-mono font-bold text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Expiry Date (MM/YY)</label>
+              <input type="text" formControlName="cardExpiry" placeholder="12/28"
+                     class="w-full p-3.5 rounded-2xl border border-slate-300 font-mono text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">CVV / Security Code</label>
+              <input type="password" maxlength="4" formControlName="cardCvv" placeholder="•••"
+                     class="w-full p-3.5 rounded-2xl border border-slate-300 font-mono text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20">
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" [disabled]="isPaying"
+                    class="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-base font-bold shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center gap-2">
+              <span *ngIf="!isPaying">Pay {{ amount | currencyFormatter }} & Confirm All Tickets</span>
+              <span *ngIf="isPaying" class="flex items-center justify-center gap-2">
+                <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Authorizing Payment...
+              </span>
+            </button>
+          </div>
+        </form>
+
+        <div class="text-center text-[11px] text-slate-400 font-medium pt-2 border-t border-slate-100">
+          🔒 256-bit SSL encrypted • Instant Ticket Delivery & Boarding Pass with Barcode PDF
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>

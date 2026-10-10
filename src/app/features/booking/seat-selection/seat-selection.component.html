@@ -1,0 +1,391 @@
+<div class="min-h-screen bg-slate-50 text-slate-800 p-6 md:p-10">
+  <div class="max-w-7xl mx-auto space-y-8">
+
+    <!-- Top Navigation Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200">
+      <div>
+        <a routerLink="/flights/dashboard" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 mb-2">
+          <span>←</span> Back to Flights
+        </a>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Select Seats & Travel Classes</h1>
+        <p class="text-sm text-slate-500 mt-1">Configure up to 5 passengers with mixed cabin classes and real-time seat holds.</p>
+      </div>
+
+      <!-- Passenger Count Selector (1-5) -->
+      <div class="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 pl-2">Passengers:</span>
+        <div class="flex items-center gap-1">
+          <button *ngFor="let n of [1, 2, 3, 4, 5]" (click)="setPassengerCount(n)"
+                  [ngClass]="passengerCount === n ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                  class="w-9 h-9 rounded-xl font-black text-xs transition-all flex items-center justify-center">
+            {{ n }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Hold Countdown Banner -->
+    <div *ngIf="holdSecondsRemaining > 0" 
+         class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center justify-between shadow-xs animate-pulse">
+      <div class="flex items-center gap-3 text-xs font-bold">
+        <span class="text-lg">⏱️</span>
+        <span>Seats are reserved for your booking. Please complete details before timer expires.</span>
+      </div>
+      <div class="px-3.5 py-1.5 rounded-xl bg-amber-100 font-black text-sm tracking-wider text-amber-900 border border-amber-200">
+        {{ formattedTimer }} remaining
+      </div>
+    </div>
+
+    <!-- TRIP LEGS TABS BAR (ROUND TRIP & MULTI-CITY) -->
+    <div *ngIf="tripLegs.length > 1" class="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 font-black text-sm flex items-center justify-center">
+            {{ tripType === 'ROUND_TRIP' ? '🔄' : '🗺️' }}
+          </span>
+          <div>
+            <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">
+              {{ tripType === 'ROUND_TRIP' ? 'Round Trip Flight Legs' : 'Multi-City Flight Legs' }}
+            </h3>
+            <p class="text-xs text-slate-500">
+              Select seats for all {{ passengers.length }} passenger(s) on each flight leg.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-slate-500">Current Step:</span>
+          <span class="px-3 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 font-extrabold text-xs">
+            Leg {{ currentLegIndex + 1 }} of {{ tripLegs.length }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Leg Buttons Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
+        <button *ngFor="let leg of tripLegs; let lIdx = index"
+                type="button"
+                (click)="switchLeg(lIdx)"
+                [ngClass]="currentLegIndex === lIdx ? 'border-blue-600 bg-blue-50/60 ring-2 ring-blue-500/20 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'"
+                class="p-4 rounded-2xl border text-left transition-all space-y-2 group">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <span>{{ lIdx === 0 ? '🛫' : (lIdx === tripLegs.length - 1 && tripType === 'ROUND_TRIP' ? '🛬' : '✈️') }}</span>
+              <span>Leg {{ lIdx + 1 }}: {{ lIdx === 0 && tripType === 'ROUND_TRIP' ? 'Outbound' : (lIdx === 1 && tripType === 'ROUND_TRIP' ? 'Return' : 'Flight') }}</span>
+            </span>
+            <span *ngIf="isLegComplete(lIdx)" class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 font-extrabold text-[11px] border border-emerald-200 flex items-center gap-1">
+              ✓ Seats Picked
+            </span>
+            <span *ngIf="!isLegComplete(lIdx)" class="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 font-bold text-[11px] border border-amber-200">
+              Pending
+            </span>
+          </div>
+
+          <div class="text-sm font-black text-slate-900">
+            {{ leg.flight?.source || leg.flight?.origin || 'Origin' }} → {{ leg.flight?.destination || 'Destination' }}
+          </div>
+
+          <div class="flex items-center justify-between text-[11px] text-slate-500">
+            <span>{{ leg.flight?.flightNumber || 'FL-' + leg.flightId }}</span>
+            <span class="font-bold text-blue-600">{{ leg.flight?.basePrice ? (leg.flight?.basePrice | currencyFormatter) : '' }}</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- PASSENGER TABS BAR -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div *ngFor="let p of passengers; let idx = index" (click)="setActivePassenger(idx)"
+           [ngClass]="activePassengerIndex === idx ? 'border-blue-600 bg-blue-50/50 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'"
+           class="cursor-pointer rounded-2xl p-4 border transition-all space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="font-black text-slate-900">#{{ idx + 1 }} {{ p.fullName }}</span>
+            <span *ngIf="p.passengerType === 'ADULT'" class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-100 text-blue-700">Adult</span>
+            <span *ngIf="p.passengerType === 'CHILD'" class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-700">Child</span>
+            <span *ngIf="p.passengerType === 'INFANT'" class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-100 text-purple-700">Infant</span>
+          </div>
+          <span *ngIf="p.selectedSeat" class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 font-extrabold text-[11px] border border-emerald-200">
+            {{ p.selectedSeat.seatNumber }}
+          </span>
+          <span *ngIf="!p.selectedSeat" class="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 font-bold text-[10px] border border-amber-200">
+            No Seat
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between text-[11px] text-slate-500">
+          <span>{{ p.travelClass }}</span>
+          <span class="font-bold text-blue-600">{{ p.fareAmount | currencyFormatter }}</span>
+        </div>
+
+        <div *ngIf="tripLegs.length > 1" class="flex flex-wrap gap-1 pt-1.5 border-t border-slate-100 text-[10px]">
+          <span *ngFor="let l of tripLegs; let lIdx = index" 
+                class="px-1.5 py-0.5 rounded font-bold"
+                [ngClass]="l.seats[idx] ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-slate-100 border border-slate-200 text-slate-400'">
+            L{{ lIdx + 1 }}: {{ l.seats[idx]?.seatNumber || '—' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE PASSENGER CLASS & SEAT CONTROL -->
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200 font-black flex items-center justify-center">
+          #{{ activePassengerIndex + 1 }}
+        </div>
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Currently Selecting Seat For:</div>
+          <div class="flex items-center gap-2">
+            <span class="text-base font-black text-slate-900">{{ currentPassenger.fullName }}</span>
+            <span *ngIf="currentPassenger.passengerType === 'ADULT'" class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Adult (12+ yrs)</span>
+            <span *ngIf="currentPassenger.passengerType === 'CHILD'" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">Child (2–11 yrs)</span>
+            <span *ngIf="currentPassenger.passengerType === 'INFANT'" class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">Infant (< 2 yrs)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Cabin Class</label>
+          <select [(ngModel)]="currentPassenger.travelClass" (ngModelChange)="onClassChange(currentPassenger)"
+                  class="px-4 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs font-bold text-blue-600 focus:outline-none focus:border-blue-500 focus:bg-white">
+            <option value="BUSINESS">Business Class</option>
+            <option value="PREMIUM_ECONOMY">Premium Economy</option>
+            <option value="ECONOMY">Economy Class</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Assigned Seat</label>
+          <div class="px-4 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs font-black text-slate-900">
+            {{ currentPassenger.selectedSeat?.seatNumber || 'Click Seat Below' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID: SEAT MAP & SIDEBAR -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- FUSELAGE SEAT MAP (8 COLS) -->
+      <div class="lg:col-span-8 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+        
+        <!-- Cabin Legend -->
+        <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-600 pb-4 border-b border-slate-200">
+          <div class="flex items-center gap-1.5">
+            <div class="w-4 h-4 rounded-lg bg-purple-50 border-2 border-purple-300"></div>
+            <span class="font-bold text-purple-900">👑 Business</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-4 h-4 rounded-lg bg-indigo-50 border-2 border-indigo-300"></div>
+            <span class="font-bold text-indigo-900">🌟 Premium Economy</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-4 h-4 rounded-lg bg-white border-2 border-slate-300"></div>
+            <span>💺 Economy</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-4 h-4 rounded-lg bg-emerald-600 border border-emerald-500 shadow-sm shadow-emerald-500/30"></div>
+            <span class="font-bold text-emerald-700">✓ Selected</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-4 h-4 rounded-lg bg-amber-100 border border-amber-300"></div>
+            <span>Held</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-4 h-4 rounded-lg bg-slate-200 border border-slate-300"></div>
+            <span>Booked</span>
+          </div>
+        </div>
+
+        <!-- Cockpit Header -->
+        <div class="flex flex-col items-center justify-center pt-2">
+          <div class="w-32 h-12 bg-slate-100 rounded-t-full border-t-2 border-slate-300 flex items-center justify-center text-xs font-black text-slate-500 uppercase tracking-widest">
+            ✈ Front
+          </div>
+        </div>
+
+        <!-- SEAT GRID -->
+        <div class="space-y-4 max-w-lg mx-auto py-4">
+
+          <!-- 1. BUSINESS CABIN SECTION -->
+          <div *ngIf="businessRows.length > 0" class="space-y-2">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-200 text-[11px] font-bold text-purple-800">
+              <span>👑</span> Business Class Cabin ({{ businessRows.length }} Rows)
+            </div>
+
+            <div *ngFor="let r of businessRows" class="flex items-center justify-between gap-4 py-1">
+              <!-- Left Cols -->
+              <div class="flex items-center gap-2">
+                <ng-container *ngFor="let col of leftColumns">
+                  <ng-container *ngTemplateOutlet="seatButton; context: { row: r, col: col }"></ng-container>
+                </ng-container>
+              </div>
+
+              <!-- Row Number Aisle -->
+              <span class="w-6 text-center text-xs font-black text-slate-400">{{ r }}</span>
+
+              <!-- Right Cols -->
+              <div class="flex items-center gap-2">
+                <ng-container *ngFor="let col of rightColumns">
+                  <ng-container *ngTemplateOutlet="seatButton; context: { row: r, col: col }"></ng-container>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. PREMIUM ECONOMY SECTION -->
+          <div *ngIf="premiumEconomyRows.length > 0" class="space-y-2 pt-4">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-[11px] font-bold text-indigo-800">
+              <span>🌟</span> Premium Economy Cabin ({{ premiumEconomyRows.length }} Rows)
+            </div>
+
+            <div *ngFor="let r of premiumEconomyRows" class="flex items-center justify-between gap-4 py-1">
+              <div class="flex items-center gap-2">
+                <ng-container *ngFor="let col of leftColumns">
+                  <ng-container *ngTemplateOutlet="seatButton; context: { row: r, col: col }"></ng-container>
+                </ng-container>
+              </div>
+
+              <span class="w-6 text-center text-xs font-black text-slate-400">{{ r }}</span>
+
+              <div class="flex items-center gap-2">
+                <ng-container *ngFor="let col of rightColumns">
+                  <ng-container *ngTemplateOutlet="seatButton; context: { row: r, col: col }"></ng-container>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. ECONOMY SECTION -->
+          <div *ngIf="economyRows.length > 0" class="space-y-2 pt-4">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-[11px] font-bold text-blue-800">
+              <span>💺</span> Economy Cabin ({{ economyRows.length }} Rows)
+            </div>
+
+            <div *ngFor="let r of economyRows" class="flex items-center justify-between gap-4 py-1">
+              <div class="flex items-center gap-2">
+                <ng-container *ngFor="let col of leftColumns">
+                  <ng-container *ngTemplateOutlet="seatButton; context: { row: r, col: col }"></ng-container>
+                </ng-container>
+              </div>
+
+              <span class="w-6 text-center text-xs font-black text-slate-400">{{ r }}</span>
+
+              <div class="flex items-center gap-2">
+                <ng-container *ngFor="let col of rightColumns">
+                  <ng-container *ngTemplateOutlet="seatButton; context: { row: r, col: col }"></ng-container>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SEAT BUTTON TEMPLATE -->
+        <ng-template #seatButton let-row="row" let-col="col">
+          <ng-container *ngIf="getSeat(row, col) as seat; else emptySpace">
+            <button type="button" (click)="selectSeat(seat)"
+                    [disabled]="(seat.status !== 'AVAILABLE' && seat.status !== 'HELD') || (seat.status === 'HELD' && !isSeatSelectedByAnyPassenger(seat))"
+                    [ngClass]="{
+                      'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/30 ring-2 ring-emerald-400': isSeatSelectedByAnyPassenger(seat),
+                      'bg-amber-100 border-amber-300 text-amber-800': seat.status === 'HELD' && !isSeatSelectedByAnyPassenger(seat),
+                      'bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed': seat.status === 'BOOKED' || seat.status === 'OCCUPIED',
+                      'bg-purple-50 text-purple-900 border-2 border-purple-300 hover:border-purple-600 hover:bg-purple-100 shadow-xs': seat.status === 'AVAILABLE' && !isSeatSelectedByAnyPassenger(seat) && seat.seatClass === 'BUSINESS',
+                      'bg-indigo-50 text-indigo-900 border-2 border-indigo-300 hover:border-indigo-600 hover:bg-indigo-100 shadow-xs': seat.status === 'AVAILABLE' && !isSeatSelectedByAnyPassenger(seat) && seat.seatClass === 'PREMIUM_ECONOMY',
+                      'bg-white text-slate-800 border-2 border-slate-300 hover:border-blue-500 hover:bg-blue-50 shadow-xs': seat.status === 'AVAILABLE' && !isSeatSelectedByAnyPassenger(seat) && seat.seatClass !== 'BUSINESS' && seat.seatClass !== 'PREMIUM_ECONOMY'
+                    }"
+                    class="w-10 h-10 rounded-xl border text-xs font-black flex items-center justify-center transition-all transform active:scale-95 disabled:cursor-not-allowed">
+              <span *ngIf="!isSeatSelectedByAnyPassenger(seat)">{{ seat.seatNumber }}</span>
+              <span *ngIf="isSeatSelectedByAnyPassenger(seat)" class="text-[10px]">#{{ getPassengerIndexForSeat(seat) + 1 }}</span>
+            </button>
+          </ng-container>
+          <ng-template #emptySpace>
+            <div class="w-10 h-10"></div>
+          </ng-template>
+        </ng-template>
+
+      </div>
+
+      <!-- RIGHT SIDEBAR: PASSENGERS SUMMARY & PROCEED BAR -->
+      <div class="lg:col-span-4 bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-xs space-y-6 sticky top-8">
+        
+        <h3 class="text-base font-black text-slate-900 flex items-center gap-2 border-b border-slate-200 pb-4">
+          <span>👥</span> Passenger Seat Allocation
+        </h3>
+
+        <!-- Individual Passenger Cards -->
+        <div class="space-y-3">
+          <div *ngFor="let p of passengers; let idx = index" 
+               class="p-4 rounded-2xl border transition-all"
+               [ngClass]="activePassengerIndex === idx ? 'border-blue-600 bg-blue-50/40' : 'border-slate-200 bg-slate-50/60'">
+            
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span class="text-slate-900">Passenger {{ idx + 1 }}: {{ p.fullName }}</span>
+              <span class="text-emerald-700 font-black">{{ p.fareAmount | currencyFormatter }}</span>
+            </div>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-500 mt-1">
+              <span>Class: <strong class="text-blue-600">{{ p.travelClass }}</strong></span>
+              <span>Seat (Leg {{ currentLegIndex + 1 }}): <strong [class.text-emerald-700]="p.selectedSeat" [class.text-amber-700]="!p.selectedSeat">
+                {{ p.selectedSeat?.seatNumber || 'Not Selected' }}
+              </strong></span>
+            </div>
+
+            <!-- Multi-Leg Seat Breakdown -->
+            <div *ngIf="tripLegs.length > 1" class="pt-2 mt-2 border-t border-slate-200 space-y-1 text-[11px]">
+              <div *ngFor="let l of tripLegs; let lIdx = index" class="flex justify-between items-center text-slate-600">
+                <span>{{ lIdx === 0 && tripType === 'ROUND_TRIP' ? '🛫 Outbound' : (lIdx === 1 && tripType === 'ROUND_TRIP' ? '🛬 Return' : 'Leg ' + (lIdx + 1)) }}:</span>
+                <span class="font-bold" [class.text-emerald-700]="l.seats[idx]" [class.text-amber-700]="!l.seats[idx]">
+                  {{ l.seats[idx]?.seatNumber || 'Not Selected' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Combined Total Calculation -->
+        <div class="pt-4 border-t border-slate-200 space-y-2">
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>Total Passengers</span>
+            <span class="text-slate-900 font-bold">{{ passengers.length }}</span>
+          </div>
+          <div *ngIf="tripLegs.length > 1" class="flex justify-between text-xs text-blue-600">
+            <span>Flight Legs</span>
+            <span class="font-bold">{{ tripLegs.length }} Legs ({{ tripLegs.length * passengers.length }} Tickets Total)</span>
+          </div>
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>Combined Fares</span>
+            <span class="text-slate-900 font-bold">{{ totalCombinedTripFare | currencyFormatter }}</span>
+          </div>
+          <div class="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-200">
+            <span>Total Amount</span>
+            <span class="text-2xl text-blue-600 font-black">{{ totalCombinedTripFare | currencyFormatter }}</span>
+          </div>
+        </div>
+
+        <!-- Proceed Action Button -->
+        <div class="space-y-2.5">
+          <button type="button" (click)="proceedToPassengerDetails()"
+                  [disabled]="!allPassengersHaveSeats"
+                  class="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-black uppercase tracking-wider shadow-lg shadow-blue-600/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all transform active:scale-95">
+            <span *ngIf="allPassengersHaveSeats">
+              Next: Passenger Info & Meal Selection →
+            </span>
+            <span *ngIf="!allPassengersHaveSeats">
+              Select All Seats (Leg {{ currentLegIndex + 1 }} of {{ tripLegs.length }})
+            </span>
+          </button>
+
+          <div class="p-3 bg-amber-50/80 rounded-2xl border border-amber-200 text-xs text-amber-950 flex items-center gap-2">
+            <span>🍽️</span>
+            <span>Next Step: Choose dietary in-flight meals (Veg, Non-Veg, Vegan, Jain, Kids) for every passenger.</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,28 @@
+/* My tickets custom styles */
+
+/* Flight booking card slight line border */
+.booking-card {
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 1.25rem;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.booking-card:hover {
+  border-color: #94a3b8 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Passenger e-ticket card slight line border */
+.passenger-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.passenger-card:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}

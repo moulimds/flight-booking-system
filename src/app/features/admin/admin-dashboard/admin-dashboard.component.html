@@ -1,0 +1,813 @@
+<div class="admin-container">
+  
+  <!-- Header Bar -->
+  <div class="admin-header">
+    <div class="brand-group">
+      <div class="brand-icon">✈</div>
+      <div>
+        <h1 class="brand-title">
+          SkyWings Operations <span class="version-pill">Admin Portal</span>
+        </h1>
+        <p class="brand-sub">Flight Operations, Multi-Passenger Booking Management & Refund Approvals</p>
+      </div>
+    </div>
+
+    <div class="action-group">
+      <button (click)="openReportModal()" class="btn btn-report">
+        📊 Generate Report
+      </button>
+      <button (click)="refreshMetrics()" class="btn btn-secondary">
+        ↻ Refresh
+      </button>
+      <a routerLink="/flights/dashboard" class="btn btn-primary">
+        + Manage Flights
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Metric Cards: 8 Core Operational Details -->
+  <div class="kpi-grid" *ngIf="metrics">
+    <!-- 1. ✈️ Total Flights -->
+    <div class="card kpi-card kpi-hover-blue" (click)="openKpiReport('totalFlights')" title="Click to view, print & export CSV report">
+      <div class="kpi-header">
+        <span class="kpi-label">✈️ Total Flights</span>
+        <div class="kpi-icon icon-blue">✈️</div>
+      </div>
+      <div class="kpi-value text-blue-600">{{ metrics.totalFlights }}</div>
+      <div class="kpi-card-footer">
+        <span class="kpi-sub sub-neutral">Live catalog routes</span>
+        <span class="kpi-action-hint">Report 📋</span>
+      </div>
+    </div>
+
+    <!-- 2. 🟢 Active Flights -->
+    <div class="card kpi-card kpi-hover-emerald" (click)="openKpiReport('activeFlights')" title="Click to view, print & export CSV report">
+      <div class="kpi-header">
+        <span class="kpi-label">🟢 Active Flights</span>
+        <div class="kpi-icon icon-emerald">🟢</div>
+      </div>
+      <div class="kpi-value text-emerald-600">{{ metrics.activeFlights }}</div>
+      <div class="kpi-card-footer">
+        <span class="kpi-sub positive">In-air & on-time ops</span>
+        <span class="kpi-action-hint">Report 📋</span>
+      </div>
+    </div>
+
+    <!-- 3. 🟡 Scheduled Flights -->
+    <div class="card kpi-card kpi-hover-amber" (click)="openKpiReport('scheduledFlights')" title="Click to view, print & export CSV report">
+      <div class="kpi-header">
+        <span class="kpi-label">🟡 Scheduled Flights</span>
+        <div class="kpi-icon icon-amber">🟡</div>
+      </div>
+      <div class="kpi-value text-amber-500">{{ metrics.scheduledFlights }}</div>
+      <div class="kpi-card-footer">
+        <span class="kpi-sub warning">Upcoming departures</span>
+        <span class="kpi-action-hint">Report 📋</span>
+      </div>
+    </div>
+
+    <!-- 4. 🔴 Cancelled Flights -->
+    <div class="card kpi-card kpi-hover-rose" (click)="openKpiReport('cancelledFlights')" title="Click to view, print & export CSV report">
+      <div class="kpi-header">
+        <span class="kpi-label">🔴 Cancelled Flights</span>
+        <div class="kpi-icon icon-rose">🔴</div>
+      </div>
+      <div class="kpi-value text-rose-600">{{ metrics.cancelledFlights }}</div>
+      <div class="kpi-card-footer">
+        <span class="kpi-sub negative">Grounded routes</span>
+        <span class="kpi-action-hint">Report 📋</span>
+      </div>
+    </div>
+
+    <!-- 5. 👥 Total Customers -->
+    <div class="card kpi-card kpi-hover-indigo" (click)="openKpiReport('totalCustomers')" title="Click to view, print & export CSV report">
+      <div class="kpi-header">
+        <span class="kpi-label">👥 Total Customers</span>
+        <div class="kpi-icon icon-indigo">👥</div>
+      </div>
+      <div class="kpi-value text-indigo-600">{{ totalUsersCount }}</div>
+      <div class="kpi-card-footer">
+        <span class="kpi-sub info">Registered accounts</span>
+        <span class="kpi-action-hint">Report 📋</span>
+      </div>
+    </div>
+
+    <!-- 6. 🎫 Total Bookings -->
+    <div class="card kpi-card kpi-hover-purple" (click)="openKpiReport('totalBookings')" title="Click to view, print & export CSV report">
+      <div class="kpi-header">
+        <span class="kpi-label">🎫 Total Bookings</span>
+        <div class="kpi-icon icon-purple">🎫</div>
+      </div>
+      <div class="kpi-value text-purple-600">{{ metrics.totalBookings }}</div>
+      <div class="kpi-card-footer">
+        <span class="kpi-sub positive">{{ metrics.confirmedBookings ?? metrics.totalBookings }} confirmed</span>
+        <span class="kpi-action-hint">Report 📋</span>
+      </div>
+    </div>
+
+    <!-- 7. 💰 Total Revenue -->
+    <div class="card kpi-card kpi-hover-teal" (click)="openKpiReport('totalRevenue')" title="Click to view, print & export CSV report">
+      <div class="kpi-header">
+        <span class="kpi-label">💰 Total Revenue</span>
+        <div class="kpi-icon icon-teal">💰</div>
+      </div>
+      <div class="kpi-value text-emerald-700">{{ metrics.totalRevenue | currencyFormatter }}</div>
+      <div class="kpi-card-footer">
+        <span class="kpi-sub positive">From confirmed tickets</span>
+        <span class="kpi-action-hint">Report 📋</span>
+      </div>
+    </div>
+
+    <!-- 8. 💳 Pending Payments -->
+    <div class="card kpi-card kpi-hover-orange" (click)="openKpiReport('pendingPayments')" title="Click to view, print & export CSV report">
+      <div class="kpi-header">
+        <span class="kpi-label">💳 Pending Payments</span>
+        <div class="kpi-icon icon-orange">💳</div>
+      </div>
+      <div class="kpi-value text-orange-600">{{ metrics.pendingPayments }}</div>
+      <div class="kpi-card-footer">
+        <span class="kpi-sub warning">Awaiting checkout</span>
+        <span class="kpi-action-hint">Report 📋</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs & Navbar Pagination -->
+  <div class="tab-bar-container">
+    <div class="tab-bar">
+      <button (click)="switchTab('bookings')" [class.tab-active]="activeTab === 'bookings'" class="tab-btn">
+        Passenger Bookings ({{ bookings.length }})
+      </button>
+      <button (click)="switchTab('flights')" [class.tab-active]="activeTab === 'flights'" class="tab-btn">
+        Flight Fleet ({{ flights.length }})
+      </button>
+      <button (click)="switchTab('users')" [class.tab-active]="activeTab === 'users'" class="tab-btn">
+        Registered Users ({{ users.length }})
+      </button>
+    </div>
+
+    <!-- Dashboard Navbar Pagination Controls -->
+    <div class="navbar-pagination">
+      <div class="page-size-selector">
+        <span class="page-size-label">Rows:</span>
+        <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)" class="page-size-select">
+          <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+        </select>
+      </div>
+
+      <div class="page-range-info">
+        <span>Showing <b>{{ startItemIndex }}–{{ endItemIndex }}</b> of <b>{{ currentTotalItems }}</b></span>
+      </div>
+
+      <div class="pagination-buttons">
+        <button (click)="prevPage()" [disabled]="currentPage === 1" class="page-btn page-arrow-btn" title="Previous page">
+          ‹
+        </button>
+
+        <button *ngFor="let p of pageNumbers" 
+                (click)="setPage(p)" 
+                [class.page-active]="p === currentPage" 
+                class="page-btn page-num-btn">
+          {{ p }}
+        </button>
+
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="page-btn page-arrow-btn" title="Next page">
+          ›
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 1: PASSENGER BOOKINGS -->
+  <div class="card table-card" *ngIf="activeTab === 'bookings'">
+    <div class="table-header">
+      <div>
+        <h3 class="table-title">Recent Passenger Bookings</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Live view of confirmed customer reservations and ticket statuses</p>
+      </div>
+      <span class="table-count">Page {{ currentPage }} of {{ totalPages }} ({{ bookings.length }} total)</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="col-pad-l">Booking Ref</th>
+            <th>Passengers</th>
+            <th>Seats & Classes</th>
+            <th>Fare</th>
+            <th>Booking Status</th>
+            <th>Payment</th>
+            <th class="col-pad-r text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of paginatedBookings">
+            <td class="col-pad-l font-mono text-blue-600 font-bold">{{ b.bookingReference }}</td>
+            <td>
+              <div class="font-bold text-slate-900">
+                {{ b.passengers && b.passengers.length > 0 ? b.passengers[0].fullName + (b.passengers.length > 1 ? ' (+' + (b.passengers.length - 1) + ')' : '') : b.passengerName }}
+              </div>
+              <div class="text-[11px] text-slate-400">{{ b.passengerEmail }}</div>
+            </td>
+            <td>
+              <div *ngIf="b.passengers && b.passengers.length > 0" class="text-xs space-y-0.5">
+                <span *ngFor="let p of b.passengers" class="inline-block mr-1 px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono">
+                  {{ p.seatNumber }} ({{ p.travelClass }})
+                </span>
+              </div>
+              <span *ngIf="!b.passengers || b.passengers.length === 0" class="font-bold text-xs">{{ b.seatNumber || 'N/A' }}</span>
+            </td>
+            <td class="font-bold">{{ b.fareAmount | currencyFormatter }}</td>
+            <td>
+              <span [appStatusBadge]="b.bookingStatus">{{ b.bookingStatus }}</span>
+            </td>
+            <td>
+              <span [appStatusBadge]="b.paymentStatus">{{ b.paymentStatus }}</span>
+            </td>
+            <td class="col-pad-r text-right">
+              <a [routerLink]="['/tickets/boarding-pass', b.bookingReference]" class="link-btn">
+                View Pass
+              </a>
+            </td>
+          </tr>
+          <tr *ngIf="bookings.length === 0">
+            <td colspan="7" class="text-center py-8 text-slate-400">No bookings found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table Pagination Footer -->
+    <div class="table-pagination-footer" *ngIf="bookings.length > 0">
+      <div class="footer-info">
+        Showing <b>{{ startItemIndex }}</b> to <b>{{ endItemIndex }}</b> of <b>{{ bookings.length }}</b> bookings
+      </div>
+      <div class="pagination-buttons">
+        <button (click)="prevPage()" [disabled]="currentPage === 1" class="page-btn page-arrow-btn">Previous</button>
+        <button *ngFor="let p of pageNumbers" (click)="setPage(p)" [class.page-active]="p === currentPage" class="page-btn page-num-btn">{{ p }}</button>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="page-btn page-arrow-btn">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: FLIGHT FLEET -->
+  <div class="card table-card" *ngIf="activeTab === 'flights'">
+    <div class="table-header">
+      <div>
+        <h3 class="table-title">Flight Inventory & Schedules</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Active airline routes, capacity allocations, and schedule statuses</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a routerLink="/aircraft/console" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all">
+          <span>✈️</span> Aircraft Fleet & Schedules Console →
+        </a>
+        <span class="table-count">Page {{ currentPage }} of {{ totalPages }} ({{ flights.length }} total)</span>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="col-pad-l">Flight #</th>
+            <th>Airline</th>
+            <th>Route</th>
+            <th>Departure</th>
+            <th>Seats Avail</th>
+            <th>Base Price</th>
+            <th>Status</th>
+            <th class="col-pad-r text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of paginatedFlights">
+            <td class="col-pad-l font-mono text-blue-600 font-bold">{{ f.flightNumber }}</td>
+            <td class="font-bold text-slate-900">{{ f.airline }}</td>
+            <td class="font-semibold">{{ f.origin || f.source }} → {{ f.destination }}</td>
+            <td class="text-slate-600">{{ f.departureTime }}</td>
+            <td class="font-bold text-slate-800">{{ f.availableSeats }}</td>
+            <td class="font-bold text-emerald-600">{{ (f.basePrice || 0) | currencyFormatter }}</td>
+            <td>
+              <span [appStatusBadge]="f.status">{{ f.status }}</span>
+            </td>
+            <td class="col-pad-r text-right">
+              <button (click)="onDeleteFlight(f.id)" class="btn-delete">
+                Delete
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="flights.length === 0">
+            <td colspan="8" class="text-center py-8 text-slate-400">No flights registered.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table Pagination Footer -->
+    <div class="table-pagination-footer" *ngIf="flights.length > 0">
+      <div class="footer-info">
+        Showing <b>{{ startItemIndex }}</b> to <b>{{ endItemIndex }}</b> of <b>{{ flights.length }}</b> flights
+      </div>
+      <div class="pagination-buttons">
+        <button (click)="prevPage()" [disabled]="currentPage === 1" class="page-btn page-arrow-btn">Previous</button>
+        <button *ngFor="let p of pageNumbers" (click)="setPage(p)" [class.page-active]="p === currentPage" class="page-btn page-num-btn">{{ p }}</button>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="page-btn page-arrow-btn">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: REGISTERED USERS -->
+  <div class="card table-card" *ngIf="activeTab === 'users'">
+    <div class="table-header">
+      <div>
+        <h3 class="table-title">Registered System Users</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Passenger and staff account profiles, contact data, and privileges</p>
+      </div>
+      <span class="table-count">Page {{ currentPage }} of {{ totalPages }} ({{ users.length }} total)</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="col-pad-l">User ID</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th class="col-pad-r">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of paginatedUsers">
+            <td class="col-pad-l font-mono text-slate-500">#{{ u.id }}</td>
+            <td class="font-bold text-slate-900">{{ u.fullName }}</td>
+            <td class="text-slate-600">{{ u.email }}</td>
+            <td class="text-slate-600">{{ u.phone || '-' }}</td>
+            <td>
+              <span class="badge badge-primary font-mono text-[10px]">{{ u.role }}</span>
+            </td>
+            <td class="col-pad-r">
+              <span class="badge badge-success" *ngIf="u.active !== false">Active</span>
+              <span class="badge badge-danger" *ngIf="u.active === false">Inactive</span>
+            </td>
+          </tr>
+          <tr *ngIf="users.length === 0">
+            <td colspan="6" class="text-center py-8 text-slate-400">No users found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table Pagination Footer -->
+    <div class="table-pagination-footer" *ngIf="users.length > 0">
+      <div class="footer-info">
+        Showing <b>{{ startItemIndex }}</b> to <b>{{ endItemIndex }}</b> of <b>{{ users.length }}</b> users
+      </div>
+      <div class="pagination-buttons">
+        <button (click)="prevPage()" [disabled]="currentPage === 1" class="page-btn page-arrow-btn">Previous</button>
+        <button *ngFor="let p of pageNumbers" (click)="setPage(p)" [class.page-active]="p === currentPage" class="page-btn page-num-btn">{{ p }}</button>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="page-btn page-arrow-btn">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN REFUND AUTHORIZATION MODAL -->
+  <div *ngIf="selectedRefund" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden space-y-6 p-8">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold uppercase">
+            Admin Refund Authorization
+          </div>
+          <h3 class="text-2xl font-black text-slate-900 mt-1">
+            Authorize Refund for PNR: {{ selectedRefund.bookingReference }}
+          </h3>
+        </div>
+        <button (click)="closeRefundModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold">
+          ✕
+        </button>
+      </div>
+
+      <!-- Financial Audit Summary Box -->
+      <div class="bg-emerald-50/50 rounded-2xl p-5 border border-emerald-200 space-y-3">
+        <h4 class="text-xs font-black uppercase text-emerald-800 tracking-wider">Authoritative Refund Summary</h4>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <span class="text-slate-500 block font-bold">Original Paid</span>
+            <span class="font-extrabold text-slate-800">{{ selectedRefund.fareAmount | currencyFormatter }}</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block font-bold">Locked Refund Rate</span>
+            <span class="font-extrabold text-blue-700">{{ selectedRefund.refundPercentage ?? 0 }}% of Fare</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block font-bold">Net Refund Amount</span>
+            <span class="font-black text-xl text-emerald-700">
+              {{ (selectedRefund.eligibleRefundAmount ?? selectedRefund.calculatedRefundAmount ?? 0) | currencyFormatter }}
+            </span>
+          </div>
+        </div>
+        <div *ngIf="selectedRefund.supportRemarks" class="text-xs text-slate-600 pt-2 border-t border-emerald-200/50">
+          <span class="font-bold text-slate-700">Support Notes:</span> {{ selectedRefund.supportRemarks }}
+        </div>
+      </div>
+
+      <!-- Action Note -->
+      <div class="p-3 bg-blue-50 rounded-xl border border-blue-200 text-xs text-blue-900">
+        ℹ️ <b>Automated System Actions on Approval:</b>
+        <ul class="list-disc pl-5 mt-1 space-y-0.5 text-[11px]">
+          <li>Triggers Payment Service refund gateway for {{ (selectedRefund.eligibleRefundAmount ?? selectedRefund.calculatedRefundAmount ?? 0) | currencyFormatter }}.</li>
+          <li>Releases all reserved passenger seats back into flight inventory (Status: <code>AVAILABLE</code>).</li>
+          <li>Transitions booking status to <code>CANCELLED</code> and payment to <code>REFUNDED</code>.</li>
+        </ul>
+      </div>
+
+      <!-- Admin Remarks Input -->
+      <div class="space-y-2">
+        <label class="block text-xs font-black uppercase text-slate-600">Admin Authorization Remarks</label>
+        <textarea [(ngModel)]="adminRemarks" rows="2"
+                  placeholder="Enter approval / release remarks (e.g. 'Refund verified and approved by Finance Desk')..."
+                  class="w-full p-3 rounded-2xl border border-slate-300 text-sm text-slate-800 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"></textarea>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button type="button" (click)="closeRefundModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50">
+          Cancel
+        </button>
+        <button type="button" [disabled]="isProcessingRefund" (click)="submitAdminRefundReview('REJECT')"
+                class="px-5 py-2.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs hover:bg-rose-100">
+          Reject Refund
+        </button>
+        <button type="button" [disabled]="isProcessingRefund" (click)="submitAdminRefundReview('APPROVE')"
+                class="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 shadow-lg shadow-emerald-600/25 flex items-center gap-2">
+          <span *ngIf="isProcessingRefund" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          ✓ Authorize Refund & Release Seats
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- EXECUTIVE OPERATIONS REPORT MODAL (8 CORE METRICS)            -->
+  <!-- ============================================================ -->
+  <div class="report-modal-overlay" *ngIf="isReportModalOpen" (click)="closeReportModal()">
+    <div class="report-modal-content" (click)="$event.stopPropagation()">
+      
+      <!-- Report Header -->
+      <div class="report-modal-header">
+        <div class="report-brand">
+          <div class="report-brand-badge">✈ SKYWINGS</div>
+          <div>
+            <h2 class="report-title">Executive Operations & Analytics Report</h2>
+            <p class="report-subtitle">Official Management Snapshot • Flight Operations & Revenue Control Bureau</p>
+          </div>
+        </div>
+        <button (click)="closeReportModal()" class="report-close-btn" title="Close Report">✕</button>
+      </div>
+
+      <!-- Report Meta Strip -->
+      <div class="report-meta-strip">
+        <div class="meta-item">
+          <span class="meta-label">Generated Timestamp:</span>
+          <span class="meta-val">{{ reportGeneratedAt }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Certifying Authority:</span>
+          <span class="meta-val">Operations Administrator</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Audit Scope:</span>
+          <span class="meta-val text-blue-600 font-bold">8 Operational Metrics</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">System Health:</span>
+          <span class="meta-val text-emerald-600 font-bold">● ACTIVE & VERIFIED</span>
+        </div>
+      </div>
+
+      <!-- Core 8 Metrics Grid in Report -->
+      <div class="report-section-title">
+        <span>1. Real-Time Operational Performance Metrics (8 Core KPIs)</span>
+      </div>
+
+      <div class="report-kpi-summary-grid" *ngIf="metrics">
+        <!-- 1. Total Flights -->
+        <div class="report-kpi-box border-blue">
+          <div class="box-icon">✈️</div>
+          <div class="box-data">
+            <div class="box-val text-blue-700">{{ metrics.totalFlights }}</div>
+            <div class="box-label">Total Flights</div>
+            <div class="box-note">Active routes catalog</div>
+          </div>
+        </div>
+
+        <!-- 2. Active Flights -->
+        <div class="report-kpi-box border-emerald">
+          <div class="box-icon">🟢</div>
+          <div class="box-data">
+            <div class="box-val text-emerald-700">{{ metrics.activeFlights }}</div>
+            <div class="box-label">Active Flights</div>
+            <div class="box-note">In-air / On-time ops</div>
+          </div>
+        </div>
+
+        <!-- 3. Scheduled Flights -->
+        <div class="report-kpi-box border-amber">
+          <div class="box-icon">🟡</div>
+          <div class="box-data">
+            <div class="box-val text-amber-600">{{ metrics.scheduledFlights }}</div>
+            <div class="box-label">Scheduled Flights</div>
+            <div class="box-note">Upcoming departures</div>
+          </div>
+        </div>
+
+        <!-- 4. Cancelled Flights -->
+        <div class="report-kpi-box border-rose">
+          <div class="box-icon">🔴</div>
+          <div class="box-data">
+            <div class="box-val text-rose-700">{{ metrics.cancelledFlights }}</div>
+            <div class="box-label">Cancelled Flights</div>
+            <div class="box-note">Grounded flights</div>
+          </div>
+        </div>
+
+        <!-- 5. Total Customers -->
+        <div class="report-kpi-box border-indigo">
+          <div class="box-icon">👥</div>
+          <div class="box-data">
+            <div class="box-val text-indigo-700">{{ totalUsersCount }}</div>
+            <div class="box-label">Total Customers</div>
+            <div class="box-note">Registered accounts</div>
+          </div>
+        </div>
+
+        <!-- 6. Total Bookings -->
+        <div class="report-kpi-box border-purple">
+          <div class="box-icon">🎫</div>
+          <div class="box-data">
+            <div class="box-val text-purple-700">{{ metrics.totalBookings }}</div>
+            <div class="box-label">Total Bookings</div>
+            <div class="box-note">{{ metrics.confirmedBookings ?? metrics.totalBookings }} confirmed</div>
+          </div>
+        </div>
+
+        <!-- 7. Total Revenue -->
+        <div class="report-kpi-box border-teal">
+          <div class="box-icon">💰</div>
+          <div class="box-data">
+            <div class="box-val text-emerald-800">{{ metrics.totalRevenue | currencyFormatter }}</div>
+            <div class="box-label">Total Revenue</div>
+            <div class="box-note">Gross ticket collections</div>
+          </div>
+        </div>
+
+        <!-- 8. Pending Payments -->
+        <div class="report-kpi-box border-orange">
+          <div class="box-icon">💳</div>
+          <div class="box-data">
+            <div class="box-val text-orange-600">{{ metrics.pendingPayments }}</div>
+            <div class="box-label">Pending Payments</div>
+            <div class="box-note">Awaiting checkout</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formal Metrics Data Table -->
+      <div class="report-section-title">
+        <span>2. Executive Summary Audit Table</span>
+      </div>
+
+      <div class="report-table-wrapper" *ngIf="metrics">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Key Performance Indicator (KPI)</th>
+              <th>Operational Domain</th>
+              <th class="text-right">Tally / Value</th>
+              <th>Status & Health</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="font-mono text-slate-500 font-bold">FL-01</td>
+              <td class="font-bold text-slate-900">✈️ Total Flights</td>
+              <td>Fleet Catalog</td>
+              <td class="text-right font-black text-blue-600">{{ metrics.totalFlights }}</td>
+              <td><span class="report-badge badge-ok">Normal Active Fleet</span></td>
+            </tr>
+            <tr>
+              <td class="font-mono text-slate-500 font-bold">FL-02</td>
+              <td class="font-bold text-slate-900">🟢 Active Flights</td>
+              <td>Flight Operations</td>
+              <td class="text-right font-black text-emerald-600">{{ metrics.activeFlights }}</td>
+              <td><span class="report-badge badge-ok">In-Air / En Route</span></td>
+            </tr>
+            <tr>
+              <td class="font-mono text-slate-500 font-bold">FL-03</td>
+              <td class="font-bold text-slate-900">🟡 Scheduled Flights</td>
+              <td>Flight Operations</td>
+              <td class="text-right font-black text-amber-600">{{ metrics.scheduledFlights }}</td>
+              <td><span class="report-badge badge-warn">Upcoming Departure</span></td>
+            </tr>
+            <tr>
+              <td class="font-mono text-slate-500 font-bold">FL-04</td>
+              <td class="font-bold text-slate-900">🔴 Cancelled Flights</td>
+              <td>Flight Operations</td>
+              <td class="text-right font-black text-rose-600">{{ metrics.cancelledFlights }}</td>
+              <td><span class="report-badge badge-danger">Grounded / Aborted</span></td>
+            </tr>
+            <tr>
+              <td class="font-mono text-slate-500 font-bold">US-01</td>
+              <td class="font-bold text-slate-900">👥 Total Customers</td>
+              <td>Customer Portal</td>
+              <td class="text-right font-black text-indigo-600">{{ totalUsersCount }}</td>
+              <td><span class="report-badge badge-info">Verified Members</span></td>
+            </tr>
+            <tr>
+              <td class="font-mono text-slate-500 font-bold">BK-01</td>
+              <td class="font-bold text-slate-900">🎫 Total Bookings</td>
+              <td>Commercial Sales</td>
+              <td class="text-right font-black text-purple-600">{{ metrics.totalBookings }}</td>
+              <td><span class="report-badge badge-ok">Reservations Ledger</span></td>
+            </tr>
+            <tr>
+              <td class="font-mono text-slate-500 font-bold">RV-01</td>
+              <td class="font-bold text-slate-900">💰 Total Revenue</td>
+              <td>Finance & Treasury</td>
+              <td class="text-right font-black text-emerald-700">{{ metrics.totalRevenue | currencyFormatter }}</td>
+              <td><span class="report-badge badge-ok">Audited Collections</span></td>
+            </tr>
+            <tr>
+              <td class="font-mono text-slate-500 font-bold">PY-01</td>
+              <td class="font-bold text-slate-900">💳 Pending Payments</td>
+              <td>Payment Gateway</td>
+              <td class="text-right font-black text-orange-600">{{ metrics.pendingPayments }}</td>
+              <td><span class="report-badge badge-warn">Awaiting Settlement</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Audit Sign-Off Section -->
+      <div class="report-signoff">
+        <div>
+          <div class="signoff-line"></div>
+          <p class="signoff-text">Certified By: Operations Administrator</p>
+          <p class="signoff-sub">SkyWings Aviation Authority • Central Operations Bureau</p>
+        </div>
+        <div class="text-right">
+          <p class="signoff-text font-mono">STATUS: AUDITED & VERIFIED</p>
+          <p class="signoff-sub">Automated Cluster Telemetry Clearance</p>
+        </div>
+      </div>
+
+      <!-- Action Toolbar in Modal (Print and CSV only) -->
+      <div class="report-modal-actions">
+        <button type="button" (click)="printReport()" class="btn btn-primary flex items-center gap-1.5" title="Print Executive Operations Report">
+          <span>🖨️ Print Report</span>
+        </button>
+        <button type="button" (click)="exportReportCsv()" class="btn btn-secondary flex items-center gap-1.5" title="Export CSV Spreadsheet">
+          <span>📊 Export CSV</span>
+        </button>
+        <button type="button" (click)="closeReportModal()" class="btn btn-outline ml-auto">
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- INDIVIDUAL KPI DETAILED REPORT MODAL (CLICKED DATA REPORT)   -->
+  <!-- ============================================================ -->
+  <div class="report-modal-overlay" *ngIf="isKpiReportModalOpen && selectedKpiReport" (click)="closeKpiReportModal()">
+    <div class="report-modal-content kpi-detail-modal" (click)="$event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="report-modal-header">
+        <div class="report-brand">
+          <div class="report-brand-badge">{{ selectedKpiReport.emoji }} {{ selectedKpiReport.title }}</div>
+          <div>
+            <h2 class="report-title">{{ selectedKpiReport.title }}</h2>
+            <p class="report-subtitle">{{ selectedKpiReport.description }}</p>
+          </div>
+        </div>
+        <button (click)="closeKpiReportModal()" class="report-close-btn" title="Close Report">✕</button>
+      </div>
+
+      <!-- Quick Action Toolbar at TOP (Print and CSV only) -->
+      <div class="kpi-top-toolbar">
+        <div class="flex items-center gap-3">
+          <span class="report-record-counter">
+            <b>{{ selectedKpiReport.totalCount }}</b> Total Records Found
+          </span>
+          <span *ngIf="selectedKpiReport.totalAmount != null" class="report-revenue-badge">
+            Audited Value: <b>{{ selectedKpiReport.totalAmount | currencyFormatter }}</b>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button type="button" (click)="printSelectedKpiReport()" class="btn btn-primary flex items-center gap-1.5" title="Print document">
+            <span>🖨️ Print</span>
+          </button>
+          <button type="button" (click)="downloadSelectedKpiCsv()" class="btn btn-secondary flex items-center gap-1.5" title="Export CSV Spreadsheet">
+            <span>📊 Export CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Report Metadata Strip -->
+      <div class="report-meta-strip">
+        <div class="meta-item">
+          <span class="meta-label">Generated Timestamp:</span>
+          <span class="meta-val">{{ selectedKpiReport.generatedAt }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Audited Metric:</span>
+          <span class="meta-val font-bold text-blue-600">{{ selectedKpiReport.emoji }} {{ selectedKpiReport.title }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Total Verified Rows:</span>
+          <span class="meta-val font-black text-slate-800">{{ selectedKpiReport.totalCount }} Entries</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Export Format:</span>
+          <span class="meta-val text-emerald-600 font-bold">Print & CSV Ready</span>
+        </div>
+      </div>
+
+      <!-- Detailed List Table for this Specific KPI -->
+      <div class="report-table-wrapper">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th *ngFor="let col of selectedKpiReport.columns">{{ col }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of selectedKpiReport.rows">
+              <td class="font-bold font-mono text-blue-600">{{ row.col1 }}</td>
+              <td class="font-semibold text-slate-800">{{ row.col2 }}</td>
+              <td class="text-slate-600">{{ row.col3 }}</td>
+              <td class="text-slate-600">{{ row.col4 }}</td>
+              <td class="font-bold text-slate-900">{{ row.col5 }}</td>
+              <td *ngIf="selectedKpiReport.columns.length >= 6" class="font-bold">
+                <span *ngIf="row.col6 && !row.status" class="text-slate-700">{{ row.col6 }}</span>
+                <span *ngIf="row.col6 && row.status" class="text-slate-700 mr-2">{{ row.col6 }}</span>
+                <span *ngIf="row.status && selectedKpiReport.columns.length === 6"
+                      class="report-badge"
+                      [ngClass]="{
+                        'badge-ok': row.statusType === 'confirmed',
+                        'badge-warn': row.statusType === 'pending',
+                        'badge-danger': row.statusType === 'cancelled',
+                        'badge-info': row.statusType === 'info'
+                      }">
+                  {{ row.status }}
+                </span>
+              </td>
+              <td *ngIf="selectedKpiReport.columns.length >= 7">
+                <span *ngIf="row.status"
+                      class="report-badge"
+                      [ngClass]="{
+                        'badge-ok': row.statusType === 'confirmed',
+                        'badge-warn': row.statusType === 'pending',
+                        'badge-danger': row.statusType === 'cancelled',
+                        'badge-info': row.statusType === 'info'
+                      }">
+                  {{ row.status }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="selectedKpiReport.rows.length === 0">
+              <td [attr.colspan]="selectedKpiReport.columns.length" class="text-center py-8 text-slate-400">
+                No records currently found for this operational filter.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal Footer with Print and CSV Buttons -->
+      <div class="report-modal-actions">
+        <button type="button" (click)="printSelectedKpiReport()" class="btn btn-primary flex items-center gap-1.5" title="Print Report">
+          <span>🖨️ Print Report</span>
+        </button>
+        <button type="button" (click)="downloadSelectedKpiCsv()" class="btn btn-secondary flex items-center gap-1.5" title="Export CSV Spreadsheet">
+          <span>📊 Export CSV</span>
+        </button>
+        <button type="button" (click)="closeKpiReportModal()" class="btn btn-outline ml-auto">
+          Close Report
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

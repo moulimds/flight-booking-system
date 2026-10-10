@@ -1,0 +1,94 @@
+<div class="p-8 max-w-7xl mx-auto space-y-6">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-teal-700 via-teal-800 to-emerald-800 rounded-3xl p-8 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-bold uppercase tracking-wider mb-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+        Customer Support Console
+      </div>
+      <h1 class="text-3xl font-black">Passenger Support & Booking Desk</h1>
+      <p class="text-sm opacity-90 text-teal-100">Review passenger bookings, verify ticket details, and assist customer inquiries.</p>
+    </div>
+    <button (click)="loadData()" class="btn btn-secondary bg-white/20 text-white hover:bg-white/30 border-0 flex items-center gap-2 font-bold text-sm">
+      <span [class.animate-spin]="isLoading">↻</span> Refresh Data
+    </button>
+  </div>
+
+  <!-- Search & Stats Bar -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="md:col-span-2 bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center gap-3">
+      <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input type="text" [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Search by PNR Reference, Passenger Name or Email..."
+             class="w-full bg-transparent text-sm font-semibold text-slate-800 outline-none">
+    </div>
+
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+      <span class="text-xs font-bold text-slate-500">Confirmed Bookings</span>
+      <span class="text-xl font-black text-emerald-600 bg-emerald-50 px-3 py-0.5 rounded-full border border-emerald-200">
+        {{ confirmedCount }}
+      </span>
+    </div>
+
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+      <span class="text-xs font-bold text-slate-500">Total Bookings</span>
+      <span class="text-xl font-black text-slate-800">{{ allBookings.length }}</span>
+    </div>
+  </div>
+
+  <!-- PASSENGER RESERVATIONS TABLE -->
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-black text-slate-900">Passenger Reservations Ledger</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Comprehensive view of booked passenger itineraries and ticketing status</p>
+      </div>
+      <span class="text-xs font-bold text-slate-400">Showing {{ filteredBookings.length }} of {{ allBookings.length }}</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-extrabold border-b border-slate-200">
+          <tr>
+            <th class="py-3 px-6">PNR Reference</th>
+            <th class="py-3 px-6">Passengers</th>
+            <th class="py-3 px-6">Amount</th>
+            <th class="py-3 px-6">Booking Status</th>
+            <th class="py-3 px-6">Payment</th>
+            <th class="py-3 px-6 text-right">Support Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let b of filteredBookings" class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-4 px-6 font-mono font-bold text-blue-600">{{ b.bookingReference }}</td>
+            <td class="py-4 px-6">
+              <div class="font-bold text-slate-900">
+                {{ b.passengers && b.passengers.length > 0 ? b.passengers[0].fullName + (b.passengers.length > 1 ? ' (+' + (b.passengers.length - 1) + ')' : '') : b.passengerName }}
+              </div>
+              <div class="text-xs text-slate-400">{{ b.passengerEmail }}</div>
+            </td>
+            <td class="py-4 px-6 font-black text-slate-900">{{ b.fareAmount | currencyFormatter }}</td>
+            <td class="py-4 px-6">
+              <span [appStatusBadge]="b.bookingStatus">{{ b.bookingStatus }}</span>
+            </td>
+            <td class="py-4 px-6">
+              <span [appStatusBadge]="b.paymentStatus">{{ b.paymentStatus }}</span>
+            </td>
+            <td class="py-4 px-6 text-right">
+              <a [routerLink]="['/tickets/boarding-pass', b.bookingReference]" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-lg transition-colors border border-blue-200">
+                <span>🎫 View E-Ticket</span>
+              </a>
+            </td>
+          </tr>
+          <tr *ngIf="filteredBookings.length === 0">
+            <td colspan="6" class="text-center py-12 text-slate-400 font-semibold">
+              No matching passenger bookings found.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
