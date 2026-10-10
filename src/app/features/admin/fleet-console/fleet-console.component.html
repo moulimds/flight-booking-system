@@ -1,0 +1,1513 @@
+<div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+  
+  <!-- Fleet Banner with Real Airbus A380 Image -->
+  <div class="relative rounded-3xl overflow-hidden bg-slate-900 text-white shadow-2xl">
+    <img src="assets/images/airbus-fleet.jpg" alt="Airbus Fleet" class="absolute inset-0 w-full h-full object-cover opacity-30">
+    <div class="relative z-10 p-8 md:p-12 space-y-4 max-w-3xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+        Aircraft Fleet & Flight Operations Console
+      </div>
+      <h1 class="text-3xl md:text-4xl font-black tracking-tight">Aircraft Operator & Flight Management</h1>
+      <p class="text-xs md:text-sm opacity-90 text-slate-200 leading-relaxed">
+        Schedule, create, update, and manage operational routes across your entire airline fleet. Configure dynamic multi-cabin seat inventories and manage airframe readiness.
+      </p>
+      <div class="flex flex-wrap items-center gap-3 pt-2">
+        <button (click)="openCreateFlightModal()" 
+                class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/30 flex items-center gap-2 transition-all">
+          <span>➕</span> Add New Flight
+        </button>
+        <a href="#cabin-configurator" 
+           class="px-5 py-2.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold backdrop-blur-md transition-all">
+          ⚙ Cabin Seat Configurator
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fleet Statistics Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-xl">✈</div>
+      <div>
+        <span class="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Total Scheduled Flights</span>
+        <span class="text-2xl font-black text-slate-900">{{ flights.length }} Routes</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xl">💺</div>
+      <div>
+        <span class="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Total Fleet Capacity</span>
+        <span class="text-2xl font-black text-slate-900">{{ totalSeats }} Seats</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-black text-xl">🛫</div>
+      <div>
+        <span class="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Active Airframes</span>
+        <span class="text-2xl font-black text-purple-700">Airbus A380 / A320</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-xl">📡</div>
+      <div>
+        <span class="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Radar Telemetry</span>
+        <span class="text-2xl font-black text-indigo-600">Active 100%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ADMIN WORKSPACE NAVIGATION TABS                                -->
+  <!-- ============================================================== -->
+  <div class="bg-white rounded-3xl p-2 border border-slate-200/80 shadow-xs flex flex-wrap items-center gap-2">
+    <button type="button" (click)="setActiveTab('FLIGHTS')"
+            class="px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2"
+            [ngClass]="activeTab === 'FLIGHTS' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'">
+      <span>✈️</span> Flight Inventory
+      <span class="text-[10px] px-2 py-0.5 rounded-full font-bold"
+            [ngClass]="activeTab === 'FLIGHTS' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'">
+        {{ flights.length }}
+      </span>
+    </button>
+
+    <button type="button" (click)="setActiveTab('AIRCRAFT')"
+            class="px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2"
+            [ngClass]="activeTab === 'AIRCRAFT' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'">
+      <span>🛫</span> Aircraft Fleet
+      <span class="text-[10px] px-2 py-0.5 rounded-full font-bold"
+            [ngClass]="activeTab === 'AIRCRAFT' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'">
+        {{ aircraftList.length }}
+      </span>
+    </button>
+
+    <button type="button" (click)="setActiveTab('MEALS')"
+            class="px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2"
+            [ngClass]="activeTab === 'MEALS' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'">
+      <span>🍽️</span> In-Flight Meals
+      <span class="text-[10px] px-2 py-0.5 rounded-full font-bold"
+            [ngClass]="activeTab === 'MEALS' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'">
+        {{ mealList.length }}
+      </span>
+    </button>
+
+    <button type="button" (click)="setActiveTab('SCHEDULES')"
+            class="px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2"
+            [ngClass]="activeTab === 'SCHEDULES' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'">
+      <span>📅</span> Weekly Schedules
+      <span class="text-[10px] px-2 py-0.5 rounded-full font-bold"
+            [ngClass]="activeTab === 'SCHEDULES' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'">
+        {{ scheduleList.length }}
+      </span>
+    </button>
+
+    <button type="button" (click)="setActiveTab('CABIN')"
+            class="px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2"
+            [ngClass]="activeTab === 'CABIN' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'">
+      <span>⚙️</span> Cabin Configurator
+    </button>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 1: FLIGHT CRUD MANAGEMENT TABLE WORKSPACE                  -->
+  <!-- ============================================================== -->
+  <div *ngIf="activeTab === 'FLIGHTS'" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+    
+    <!-- Table Header & Toolbar -->
+    <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-wider mb-1">
+          Route Operations
+        </div>
+        <h2 class="text-lg sm:text-xl font-black text-slate-900 leading-tight">Flight Inventory & Route Schedules</h2>
+        <p class="text-xs text-slate-500">Manage all flights, adjust departure timings, edit base fares, and change operational status.</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Search Input -->
+        <div class="relative flex-1 sm:flex-initial">
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()"
+                 placeholder="Search flight, airline, route..."
+                 class="w-full sm:w-44 md:w-56 pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all">
+          <span class="absolute left-2.5 top-1.5 text-xs text-slate-400">🔍</span>
+        </div>
+
+        <!-- Status Filter -->
+        <select [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()"
+                class="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-500 focus:bg-white transition-all">
+          <option value="ALL">All Statuses</option>
+          <option value="SCHEDULED">Scheduled</option>
+          <option value="ON_TIME">On Time</option>
+          <option value="BOARDING">Boarding</option>
+          <option value="DELAYED">Delayed</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+
+        <!-- Rows Per Page Selector -->
+        <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600">
+          <span class="text-[10px] uppercase text-slate-400">Show:</span>
+          <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)"
+                  class="bg-transparent text-xs font-black text-slate-800 focus:outline-none cursor-pointer">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+
+        <!-- Refresh Button -->
+        <button (click)="loadData()" 
+                class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1"
+                title="Refresh Flights">
+          ↻ <span class="hidden sm:inline">Refresh</span>
+        </button>
+
+        <!-- Create Flight for Specific Days Action -->
+        <button (click)="openCreateScheduleModal()"
+                class="px-4 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-purple-600/20 flex items-center gap-1.5 transition-all whitespace-nowrap">
+          <span>📅</span> Add Flight for Specific Days
+        </button>
+
+        <!-- Create Flight Action -->
+        <button (click)="openCreateFlightModal()"
+                class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition-all whitespace-nowrap">
+          <span>➕</span> Add Flight
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div *ngIf="isLoading" class="text-center py-14">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+      <p class="text-xs text-slate-500 mt-2 font-bold">Loading flight fleet inventory...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && filteredFlights.length === 0" class="text-center py-14 space-y-3">
+      <div class="text-4xl">✈️</div>
+      <h3 class="text-base font-black text-slate-900">No Flights Found</h3>
+      <p class="text-xs text-slate-500">No routes match the current search query or filter selection.</p>
+      <button (click)="searchTerm = ''; statusFilter = 'ALL'; onFilterChange()" 
+              class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700">
+        Reset Filter
+      </button>
+    </div>
+
+    <!-- Flights Data Table -->
+    <div *ngIf="!isLoading && filteredFlights.length > 0" class="overflow-x-auto max-h-[540px] overflow-y-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50/95 backdrop-blur-sm text-slate-500 text-[10px] uppercase font-black border-y border-slate-200 sticky top-0 z-10">
+          <tr>
+            <th class="py-2.5 px-3">Flight #</th>
+            <th class="py-2.5 px-3">Airline & Aircraft</th>
+            <th class="py-2.5 px-3">Route</th>
+            <th class="py-2.5 px-3">Schedule</th>
+            <th class="py-2.5 px-3">Seats</th>
+            <th class="py-2.5 px-3">Base Fare</th>
+            <th class="py-2.5 px-3">Status</th>
+            <th class="py-2.5 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let f of paginatedFlights" class="hover:bg-slate-50/70 transition-colors">
+            
+            <!-- Flight Number -->
+            <td class="py-2.5 px-3 font-mono font-black text-blue-700 text-xs whitespace-nowrap">
+              {{ f.flightNumber }}
+            </td>
+
+            <!-- Airline & Aircraft -->
+            <td class="py-2.5 px-3">
+              <div class="font-extrabold text-slate-900 text-xs truncate max-w-[140px]" [title]="f.airline">{{ f.airline }}</div>
+              <div class="text-[10px] text-slate-500 font-medium truncate max-w-[140px]" [title]="getRegistrationForFlight(f) + ' • ' + getAircraftModelForFlight(f)">
+                <span class="font-mono text-blue-600 font-bold">{{ getRegistrationForFlight(f) }}</span> • {{ getAircraftModelForFlight(f) }}
+              </div>
+            </td>
+
+            <!-- Route -->
+            <td class="py-2.5 px-3 whitespace-nowrap">
+              <div class="font-black text-slate-800 flex items-center gap-1">
+                <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-mono text-[10px]">{{ f.source || f.origin }}</span>
+                <span class="text-slate-400 text-[10px]">→</span>
+                <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-mono text-[10px]">{{ f.destination }}</span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">{{ f.duration || '2h 15m' }}</div>
+            </td>
+
+            <!-- Timing -->
+            <td class="py-2.5 px-3 whitespace-nowrap">
+              <div class="font-bold text-slate-900 text-xs">{{ f.departureTime }} - {{ f.arrivalTime }}</div>
+              <div class="text-[10px] text-slate-400">{{ f.departureDate }}</div>
+            </td>
+
+            <!-- Seats -->
+            <td class="py-2.5 px-3 whitespace-nowrap">
+              <div class="flex items-center gap-1 text-[11px]">
+                <span class="font-black text-emerald-700">{{ f.availableSeats }}</span>
+                <span class="text-slate-400">/</span>
+                <span class="font-bold text-slate-600">{{ f.totalSeats || 180 }}</span>
+              </div>
+              <div class="w-16 bg-slate-100 rounded-full h-1 mt-1 overflow-hidden">
+                <div class="bg-emerald-500 h-1 rounded-full" 
+                     [style.width.%]="((f.availableSeats / (f.totalSeats || 180)) * 100)"></div>
+              </div>
+            </td>
+
+            <!-- Base Fare -->
+            <td class="py-2.5 px-3 font-black text-slate-900 text-xs whitespace-nowrap">
+              {{ (f.basePrice || 5000) | currencyFormatter }}
+            </td>
+
+            <!-- Status with Interactive Quick Pill Dropdown -->
+            <td class="py-2.5 px-3 whitespace-nowrap">
+              <div class="relative inline-block">
+                <select [ngModel]="f.status" (ngModelChange)="quickUpdateStatus(f, $event)"
+                        [ngClass]="{
+                          'bg-emerald-50 text-emerald-700 border-emerald-200': f.status === 'ON_TIME' || f.status === 'ACTIVE' || f.status === 'CONFIRMED',
+                          'bg-blue-50 text-blue-700 border-blue-200': f.status === 'SCHEDULED',
+                          'bg-amber-50 text-amber-700 border-amber-200': f.status === 'BOARDING',
+                          'bg-orange-50 text-orange-700 border-orange-200': f.status === 'DELAYED',
+                          'bg-rose-50 text-rose-700 border-rose-200': f.status === 'CANCELLED'
+                        }"
+                        class="text-[10px] font-black uppercase px-2 py-1 pr-5 rounded-lg border appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm leading-tight"
+                        title="Click to update status">
+                  <option value="SCHEDULED">SCHEDULED</option>
+                  <option value="ON_TIME">ON_TIME</option>
+                  <option value="BOARDING">BOARDING</option>
+                  <option value="DELAYED">DELAYED</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                </select>
+                <span class="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] opacity-60">▼</span>
+              </div>
+            </td>
+
+            <!-- Action Buttons -->
+            <td class="py-2.5 px-3 text-right whitespace-nowrap">
+              <div class="inline-flex items-center justify-end gap-1">
+                
+                <!-- Flight Passenger & Seat Report Button -->
+                <button (click)="openFlightReport(f)"
+                        class="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-[10px] transition-all flex items-center gap-1"
+                        title="Generate Customer & Seat Details Report">
+                  <span>📋</span><span class="hidden sm:inline">Report</span>
+                </button>
+
+                <!-- Configure Cabin Seats Button -->
+                <button (click)="selectFlightForCabinConfig(f)"
+                        class="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold text-[10px] transition-all flex items-center gap-1"
+                        title="Configure multi-cabin seat allocation for this flight">
+                  <span>⚙</span><span class="hidden sm:inline">Seats</span>
+                </button>
+
+                <!-- Edit Flight Button -->
+                <button (click)="openEditFlightModal(f)"
+                        class="px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-[10px] transition-all flex items-center gap-1"
+                        title="Edit Flight details">
+                  <span>✏</span><span class="hidden sm:inline">Edit</span>
+                </button>
+
+                <!-- Delete Flight Button -->
+                <button (click)="openDeleteModal(f)"
+                        class="p-1 px-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[10px] transition-all"
+                        title="Delete Flight from fleet">
+                  🗑
+                </button>
+
+              </div>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div *ngIf="!isLoading && filteredFlights.length > 0" 
+         class="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs bg-slate-50/50">
+      
+      <div class="flex items-center gap-3 text-slate-500 font-medium">
+        <span>
+          Showing <strong class="text-slate-900 font-bold">{{ startItemIndex }}</strong> to <strong class="text-slate-900 font-bold">{{ endItemIndex }}</strong> of <strong class="text-slate-900 font-bold">{{ totalFilteredFlights }}</strong> flights
+        </span>
+        <span *ngIf="totalPages > 1" class="text-slate-400 text-[11px]">
+          (Page {{ currentPage }} of {{ totalPages }})
+        </span>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="flex items-center gap-1">
+        <button (click)="prevPage()" [disabled]="currentPage === 1"
+                class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm">
+          ‹ Prev
+        </button>
+
+        <div class="flex items-center gap-1">
+          <button *ngFor="let p of pageNumbers" (click)="setPage(p)"
+                  [ngClass]="p === currentPage ? 'bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-600/30' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'"
+                  class="w-7 h-7 rounded-xl border font-bold text-xs flex items-center justify-center transition-all">
+            {{ p }}
+          </button>
+        </div>
+
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm">
+          Next ›
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 2: AIRCRAFT FLEET ADMINISTRATION                          -->
+  <!-- ============================================================== -->
+  <div *ngIf="activeTab === 'AIRCRAFT'" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden space-y-4">
+    <!-- Header Toolbar -->
+    <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-wider mb-1">
+          Fleet Assets & Airframes
+        </div>
+        <h2 class="text-xl font-black text-slate-900 leading-tight">Aircraft Registry & Equipment Fleet</h2>
+        <p class="text-xs text-slate-500">Manage aircraft records, registration / tail identifiers, cabin seat layouts, and operational airframe readiness.</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button (click)="loadAircraft()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5">
+          ↻ <span>Refresh Fleet</span>
+        </button>
+        <button (click)="openCreateAircraftModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition-all">
+          <span>➕</span> Add Aircraft
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isAircraftLoading" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+      <p class="text-xs text-slate-500 mt-2 font-bold">Loading aircraft registry...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isAircraftLoading && aircraftList.length === 0" class="text-center py-12 space-y-3">
+      <div class="text-4xl">🛫</div>
+      <h3 class="text-base font-black text-slate-900">No Aircraft Configured</h3>
+      <p class="text-xs text-slate-500">Register your first commercial airframe into the fleet database.</p>
+      <button (click)="openCreateAircraftModal()" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold">
+        Add First Aircraft
+      </button>
+    </div>
+
+    <!-- Aircraft Data Table -->
+    <div *ngIf="!isAircraftLoading && aircraftList.length > 0" class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-black border-y border-slate-200">
+          <tr>
+            <th class="py-3 px-4">Aircraft Model</th>
+            <th class="py-3 px-4">Tail / Reg #</th>
+            <th class="py-3 px-4">Airline Operator</th>
+            <th class="py-3 px-4">Total Seating</th>
+            <th class="py-3 px-4">Cabin Layout</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let a of aircraftList" class="hover:bg-blue-50/30 transition-all">
+            <td class="py-3.5 px-4 font-black text-slate-900 flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-xs">✈</span>
+              <span>{{ a.model }}</span>
+            </td>
+            <td class="py-3.5 px-4 font-mono font-black text-blue-700 bg-blue-50/40 rounded">{{ a.registrationNumber }}</td>
+            <td class="py-3.5 px-4 text-slate-600 font-semibold">{{ a.airline || 'SkyWings' }}</td>
+            <td class="py-3.5 px-4 font-bold text-slate-800">{{ a.totalCapacity }} Seats</td>
+            <td class="py-3.5 px-4">
+              <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono font-bold text-[10px]">
+                {{ a.seatLayout || '3x3' }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                    [ngClass]="a.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'">
+                {{ a.status || 'ACTIVE' }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-right space-x-2 whitespace-nowrap">
+              <button (click)="openEditAircraftModal(a)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition-all">
+                ✏ Edit
+              </button>
+              <button (click)="toggleAircraftStatus(a)" 
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all"
+                      [ngClass]="a.status === 'ACTIVE' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'">
+                {{ a.status === 'ACTIVE' ? 'Deactivate' : 'Activate' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 3: IN-FLIGHT MEAL SERVICE MANAGEMENT                       -->
+  <!-- ============================================================== -->
+  <div *ngIf="activeTab === 'MEALS'" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden space-y-4">
+    <!-- Header Toolbar -->
+    <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-black uppercase tracking-wider mb-1">
+          Catering & Dining Configuration
+        </div>
+        <h2 class="text-xl font-black text-slate-900 leading-tight">In-Flight Meals & Dietary Menu</h2>
+        <p class="text-xs text-slate-500">Configure aircraft-specific dining choices, dietary labels (Veg, Non-Veg, Vegan, Jain, Gluten-Free, Child), complimentary and paid pricing.</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button (click)="loadMeals()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5">
+          ↻ <span>Refresh Menu</span>
+        </button>
+        <button (click)="openCreateMealModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition-all">
+          <span>➕</span> Add Meal Option
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isMealsLoading" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+      <p class="text-xs text-slate-500 mt-2 font-bold">Loading meal choices...</p>
+    </div>
+
+    <!-- Meals Data Table -->
+    <div *ngIf="!isMealsLoading && mealList.length > 0" class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-black border-y border-slate-200">
+          <tr>
+            <th class="py-3 px-4">Meal Option</th>
+            <th class="py-3 px-4">Dietary Classification</th>
+            <th class="py-3 px-4">Description</th>
+            <th class="py-3 px-4">Fare / Pricing</th>
+            <th class="py-3 px-4">Inventory Limit</th>
+            <th class="py-3 px-4">Availability</th>
+            <th class="py-3 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let m of mealList" class="hover:bg-blue-50/30 transition-all">
+            <td class="py-3.5 px-4 font-black text-slate-900">
+              <div class="flex items-center gap-2">
+                <span class="text-base">🍱</span>
+                <div>
+                  <div>{{ m.name }}</div>
+                  <span *ngIf="m.complimentary" class="text-[9px] uppercase font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded">Complimentary</span>
+                </div>
+              </div>
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"
+                    [ngClass]="{
+                      'bg-emerald-100 text-emerald-800': m.category === 'VEGETARIAN' || m.category === 'VEGAN',
+                      'bg-amber-100 text-amber-800': m.category === 'NON_VEGETARIAN',
+                      'bg-purple-100 text-purple-800': m.category === 'JAIN',
+                      'bg-teal-100 text-teal-800': m.category === 'GLUTEN_FREE',
+                      'bg-pink-100 text-pink-800': m.category === 'CHILD',
+                      'bg-slate-100 text-slate-700': m.category === 'NO_MEAL'
+                    }">
+                {{ m.category }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-slate-500 max-w-xs truncate">{{ m.description || 'Standard meal catering' }}</td>
+            <td class="py-3.5 px-4 font-mono font-black" [ngClass]="m.complimentary ? 'text-blue-700' : 'text-emerald-700'">
+              {{ m.complimentary ? 'Free (Included)' : (m.price | currencyFormatter) }}
+            </td>
+            <td class="py-3.5 px-4 font-bold text-slate-700">{{ m.inventoryLimit || 'Unlimited' }}</td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
+                    [ngClass]="m.available !== false ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'">
+                {{ m.available !== false ? 'Available' : 'Unavailable' }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-right space-x-2 whitespace-nowrap">
+              <button (click)="openEditMealModal(m)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition-all">
+                ✏ Edit
+              </button>
+              <button (click)="toggleMealAvailability(m)" 
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all"
+                      [ngClass]="m.available !== false ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'">
+                {{ m.available !== false ? 'Mark Unavailable' : 'Mark Available' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 4: WEEKLY FLIGHT SCHEDULES MANAGEMENT                      -->
+  <!-- ============================================================== -->
+  <div *ngIf="activeTab === 'SCHEDULES'" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden space-y-4">
+    <!-- Header Toolbar -->
+    <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 text-[10px] font-black uppercase tracking-wider mb-1">
+          Recurring Operations
+        </div>
+        <h2 class="text-xl font-black text-slate-900 leading-tight">Weekly Flight Scheduling & Automatic Generation</h2>
+        <p class="text-xs text-slate-500">Configure recurring services by operating days (Mon–Sun), set validity dates, and generate individual flight instances without duplicates.</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button (click)="loadSchedules()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5">
+          ↻ <span>Refresh Schedules</span>
+        </button>
+        <button (click)="openCreateScheduleModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition-all">
+          <span>➕</span> New Weekly Schedule
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isSchedulesLoading" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+      <p class="text-xs text-slate-500 mt-2 font-bold">Loading weekly schedules...</p>
+    </div>
+
+    <!-- Schedules Data Table -->
+    <div *ngIf="!isSchedulesLoading && scheduleList.length > 0" class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-black border-y border-slate-200">
+          <tr>
+            <th class="py-3 px-4">Schedule / Flight #</th>
+            <th class="py-3 px-4">Route</th>
+            <th class="py-3 px-4">Timing</th>
+            <th class="py-3 px-4">Operating Days</th>
+            <th class="py-3 px-4">Validity Range</th>
+            <th class="py-3 px-4">Base Fare & Seats</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let s of scheduleList" class="hover:bg-blue-50/30 transition-all">
+            <td class="py-3.5 px-4 font-black text-slate-900">
+              <div class="font-mono text-blue-700 font-black">{{ s.scheduleCode }}</div>
+              <div class="text-[11px] text-slate-600">{{ s.flightNumber }} ({{ s.airline || 'SkyWings' }})</div>
+            </td>
+            <td class="py-3.5 px-4 font-bold text-slate-800">
+              {{ s.origin }} → {{ s.destination }}
+            </td>
+            <td class="py-3.5 px-4 font-mono font-bold text-slate-600">
+              {{ s.departureTime }} - {{ s.arrivalTime }}
+            </td>
+            <td class="py-3.5 px-4">
+              <div class="flex flex-wrap gap-1 max-w-xs">
+                <span *ngFor="let day of (s.operatingDays || [])" 
+                      class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-extrabold text-[9px] uppercase">
+                  {{ day.substring(0, 3) }}
+                </span>
+              </div>
+            </td>
+            <td class="py-3.5 px-4 text-[11px] text-slate-600 font-medium">
+              <div>{{ s.startDate }}</div>
+              <div class="text-[10px] text-slate-400">to {{ s.endDate }}</div>
+            </td>
+            <td class="py-3.5 px-4 font-mono font-bold">
+              <div class="text-emerald-700 font-black">{{ s.baseFare | currencyFormatter }}</div>
+              <div class="text-[10px] text-slate-400 font-sans">{{ s.totalCapacity }} seats</div>
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                    [ngClass]="s.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'">
+                {{ s.status || 'ACTIVE' }}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-right space-x-2 whitespace-nowrap">
+              <button (click)="generateFlightsForSchedule(s)" [disabled]="isGeneratingScheduleFlights"
+                      class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black uppercase tracking-wider shadow-sm transition-all flex-inline items-center gap-1">
+                <span>⚡</span> Generate Flights
+              </button>
+              <button (click)="toggleScheduleStatus(s)" 
+                      class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all"
+                      [ngClass]="s.status === 'ACTIVE' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'">
+                {{ s.status === 'ACTIVE' ? 'Suspend' : 'Activate' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- TAB 5: AIRCRAFT CABIN & DYNAMIC SEAT INVENTORY WORKSPACE       -->
+  <!-- ============================================================== -->
+  <div *ngIf="activeTab === 'CABIN'" id="cabin-configurator" class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-2">
+          ⚙ Cabin Configurator
+        </div>
+        <h2 class="text-xl font-black text-slate-900">Define Aircraft Cabin & Dynamic Seat Inventory</h2>
+        <p class="text-xs text-slate-500">Configure Business, Premium Economy, and Economy capacities with class-specific fares in ₹ (INR).</p>
+      </div>
+
+      <!-- Live Summary Badge -->
+      <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+        <div class="text-right">
+          <span class="text-[10px] font-bold text-slate-400 block uppercase">Total Configured Capacity</span>
+          <span class="text-2xl font-black text-blue-600">{{ computedTotalCapacity }} Seats</span>
+        </div>
+        <div class="text-right border-l border-slate-200 pl-4">
+          <span class="text-[10px] font-bold text-slate-400 block uppercase">Total Cabin Rows</span>
+          <span class="text-2xl font-black text-slate-800">{{ computedTotalRows }} Rows</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Aircraft Identity & Flight Assignment -->
+      <div class="lg:col-span-4 space-y-4">
+        <!-- 1. Assign to Operational Flight -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-slate-700">Assign to Operational Flight</label>
+            <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Auto-Syncs</span>
+          </div>
+          <select [ngModel]="config.flightId" (ngModelChange)="onFlightChange($event)" 
+                  class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm">
+            <option *ngFor="let f of flights" [value]="f.id">
+              {{ f.airline }} {{ f.flightNumber }} ({{ getRegistrationForFlight(f) }} • {{ f.source || f.origin }} → {{ f.destination }})
+            </option>
+          </select>
+          <p class="text-[10px] text-slate-400 mt-1">Changes Aircraft Model & Tail / Registration Number automatically.</p>
+        </div>
+
+        <!-- 2. Aircraft Model / Airframe -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-slate-700">Aircraft Model / Airframe</label>
+            <span class="text-[10px] font-bold text-slate-500">{{ config.layoutType === '3x3' ? 'Widebody' : 'Narrowbody' }}</span>
+          </div>
+          <div class="relative">
+            <input type="text" list="fleet-models" 
+                   [ngModel]="config.aircraftModel" (ngModelChange)="onAircraftModelChange($event)"
+                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm" 
+                   placeholder="e.g. Airbus A380-800">
+            <datalist id="fleet-models">
+              <option value="Airbus A380-800">Airbus A380-800 (Double-deck Widebody)</option>
+              <option value="Boeing 787-9 Dreamliner">Boeing 787-9 Dreamliner (Widebody)</option>
+              <option value="Airbus A350-900">Airbus A350-900 (Widebody)</option>
+              <option value="Boeing 777-300ER">Boeing 777-300ER (Widebody)</option>
+              <option value="Airbus A320neo">Airbus A320neo (Narrowbody)</option>
+              <option value="Airbus A321neo">Airbus A321neo (Narrowbody)</option>
+              <option value="Boeing 737 MAX 8">Boeing 737 MAX 8 (Narrowbody)</option>
+              <option value="ATR 72-600">ATR 72-600 (Regional 2x2)</option>
+            </datalist>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Changing model links to corresponding flight routes & adjusts seating layout.</p>
+        </div>
+
+        <!-- 3. Tail / Registration Number -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-slate-700">Tail / Registration Number</label>
+            <span class="text-[10px] font-mono text-slate-400">DGCA/ICAO Code</span>
+          </div>
+          <div class="relative">
+            <input type="text" list="fleet-registrations" 
+                   [ngModel]="config.registrationNumber" (ngModelChange)="onRegistrationChange($event)"
+                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-mono font-bold uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm" 
+                   placeholder="e.g. VT-AI202">
+            <datalist id="fleet-registrations">
+              <option *ngFor="let f of flights" [value]="getRegistrationForFlight(f)">
+                {{ f.airline }} {{ f.flightNumber }} ({{ getAircraftModelForFlight(f) }})
+              </option>
+            </datalist>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Changing or picking a Tail Number switches to the matching Operational Flight (vice versa).</p>
+        </div>
+
+        <!-- 4. Fuselage Seating Layout -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Fuselage Seating Layout</label>
+          <select [(ngModel)]="config.layoutType" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm">
+            <option value="3x3">3 + 3 Widebody / Standard (Columns A, B, C | D, E, F)</option>
+            <option value="2x2">2 + 2 Narrowbody / Regional (Columns A, B | C, D)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Cabin Classes Breakdown Cards -->
+      <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Business Class -->
+        <div class="p-5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-3">
+          <div class="flex items-center gap-2 text-amber-900 font-bold text-sm">
+            <span>👑</span> Business Class
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-amber-800 mb-1">Seat Count</label>
+            <input type="number" [(ngModel)]="config.businessSeats" class="w-full px-3 py-2 rounded-xl border border-amber-300 text-sm font-bold bg-white focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-amber-800 mb-1">Seat Surcharge (₹)</label>
+            <input type="number" [(ngModel)]="config.businessPrice" class="w-full px-3 py-2 rounded-xl border border-amber-300 text-sm font-bold bg-white focus:outline-none">
+            <span class="text-[10px] text-amber-700 mt-1 block">{{ config.businessPrice | currencyFormatter }}</span>
+          </div>
+        </div>
+
+        <!-- Premium Economy Class -->
+        <div class="p-5 rounded-2xl bg-purple-50/60 border border-purple-200 space-y-3">
+          <div class="flex items-center gap-2 text-purple-900 font-bold text-sm">
+            <span>✨</span> Premium Economy
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-purple-800 mb-1">Seat Count</label>
+            <input type="number" [(ngModel)]="config.premiumSeats" class="w-full px-3 py-2 rounded-xl border border-purple-300 text-sm font-bold bg-white focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-purple-800 mb-1">Seat Surcharge (₹)</label>
+            <input type="number" [(ngModel)]="config.premiumPrice" class="w-full px-3 py-2 rounded-xl border border-purple-300 text-sm font-bold bg-white focus:outline-none">
+            <span class="text-[10px] text-purple-700 mt-1 block">{{ config.premiumPrice | currencyFormatter }}</span>
+          </div>
+        </div>
+
+        <!-- Economy Class -->
+        <div class="p-5 rounded-2xl bg-blue-50/60 border border-blue-200 space-y-3">
+          <div class="flex items-center gap-2 text-blue-900 font-bold text-sm">
+            <span>💺</span> Economy Class
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-blue-800 mb-1">Seat Count</label>
+            <input type="number" [(ngModel)]="config.economySeats" class="w-full px-3 py-2 rounded-xl border border-blue-300 text-sm font-bold bg-white focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-blue-800 mb-1">Seat Surcharge (₹)</label>
+            <input type="number" [(ngModel)]="config.economyPrice" class="w-full px-3 py-2 rounded-xl border border-blue-300 text-sm font-bold bg-white focus:outline-none">
+            <span class="text-[10px] text-blue-700 mt-1 block">{{ config.economyPrice | currencyFormatter }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Action -->
+    <div class="flex justify-end pt-4 border-t border-slate-100">
+      <button (click)="applyAircraftConfiguration()"
+              [disabled]="isSubmitting || computedTotalCapacity <= 0"
+              class="px-8 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-600/30 flex items-center gap-2 disabled:opacity-50 transition-all">
+        <span *ngIf="isSubmitting" class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+        <span>Apply Configuration & Generate Cabin Layout ({{ computedTotalCapacity }} Seats) →</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================== -->
+<!-- CREATE / EDIT FLIGHT MODAL                                     -->
+<!-- ============================================================== -->
+<div *ngIf="showFlightModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl space-y-6 text-slate-800 animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 text-blue-700 flex items-center justify-center font-black">
+          ✈
+        </div>
+        <div>
+          <h3 class="text-lg font-black text-slate-900">
+            {{ modalMode === 'CREATE' ? 'Add New Scheduled Flight' : 'Edit Flight ' + flightForm.flightNumber }}
+          </h3>
+          <p class="text-xs text-slate-400">Fill in route timings, airframe, seat capacity, and base fare.</p>
+        </div>
+      </div>
+
+      <button type="button" (click)="closeFlightModal()" class="text-slate-400 hover:text-slate-600 font-black text-lg p-1">
+        ✕
+      </button>
+    </div>
+
+    <!-- Modal Form Fields -->
+    <div class="space-y-4 text-xs">
+      
+      <!-- Flight Number & Airline -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Flight Number *</label>
+          <input type="text" [(ngModel)]="flightForm.flightNumber" 
+                 placeholder="e.g. AI-202, 6E-551"
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-mono font-bold uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Operating Airline *</label>
+          <select [(ngModel)]="flightForm.airline" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+            <option value="Air India">Air India</option>
+            <option value="IndiGo">IndiGo</option>
+            <option value="Vistara">Vistara</option>
+            <option value="SpiceJet">SpiceJet</option>
+            <option value="Air India Express">Air India Express</option>
+            <option value="Emirates">Emirates</option>
+            <option value="Qatar Airways">Qatar Airways</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Aircraft Model & Initial Status -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Aircraft Model</label>
+          <input type="text" [(ngModel)]="flightForm.aircraftModel" 
+                 placeholder="e.g. Airbus A380-800, Boeing 777"
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Flight Status</label>
+          <select [(ngModel)]="flightForm.status" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+            <option value="SCHEDULED">SCHEDULED</option>
+            <option value="ON_TIME">ON_TIME</option>
+            <option value="BOARDING">BOARDING</option>
+            <option value="DELAYED">DELAYED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Route: Origin & Destination -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Origin / Source Airport (IATA) *</label>
+          <input type="text" [(ngModel)]="flightForm.source" 
+                 placeholder="e.g. DEL, BOM, BLR, HYD"
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-mono font-bold uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Destination Airport (IATA) *</label>
+          <input type="text" [(ngModel)]="flightForm.destination" 
+                 placeholder="e.g. BOM, DEL, MAA, GOI"
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-mono font-bold uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Departure & Arrival Dates -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Departure Date *</label>
+          <input type="date" [(ngModel)]="flightForm.departureDate" 
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Arrival Date</label>
+          <input type="date" [(ngModel)]="flightForm.arrivalDate" 
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Departure & Arrival Times & Duration -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Departure Time (HH:mm) *</label>
+          <input type="time" [(ngModel)]="flightForm.departureTime" 
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-mono font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Arrival Time (HH:mm) *</label>
+          <input type="time" [(ngModel)]="flightForm.arrivalTime" 
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-mono font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Duration</label>
+          <input type="text" [(ngModel)]="flightForm.duration" 
+                 placeholder="e.g. 2h 15m"
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Capacity & Base Fare -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Total Seats *</label>
+          <input type="number" [(ngModel)]="flightForm.totalSeats" 
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Available Seats *</label>
+          <input type="number" [(ngModel)]="flightForm.availableSeats" 
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Base Price (₹ INR) *</label>
+          <input type="number" [(ngModel)]="flightForm.basePrice" 
+                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-bold text-emerald-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="flex items-center justify-between gap-4 pt-4 border-t border-slate-200">
+      <button type="button" (click)="closeFlightModal()" 
+              class="px-5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all">
+        Cancel
+      </button>
+
+      <button type="button" (click)="saveFlight()" [disabled]="isFlightSubmitting"
+              class="px-7 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-blue-600/30 disabled:opacity-50 transition-all flex items-center gap-2">
+        <span *ngIf="isFlightSubmitting" class="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>
+        <span>{{ modalMode === 'CREATE' ? 'Create Flight Schedule →' : 'Save Changes →' }}</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- DELETE CONFIRMATION MODAL                                      -->
+<!-- ============================================================== -->
+<div *ngIf="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-5 text-slate-800 animate-in fade-in zoom-in duration-150">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center font-black">
+        ⚠️
+      </div>
+      <div>
+        <h3 class="text-base font-black text-slate-900">Delete Flight Route</h3>
+        <p class="text-xs text-slate-400">This action cannot be undone.</p>
+      </div>
+    </div>
+
+    <p class="text-xs text-slate-600 leading-relaxed">
+      Are you sure you want to permanently remove flight <strong class="text-slate-900 font-mono">{{ flightToDelete?.flightNumber }}</strong> ({{ flightToDelete?.airline }} • {{ flightToDelete?.source || flightToDelete?.origin }} → {{ flightToDelete?.destination }}) from the schedule catalog?
+    </p>
+
+    <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+      <button (click)="closeDeleteModal()" 
+              class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all">
+        Cancel
+      </button>
+      <button (click)="confirmDeleteFlight()" 
+              class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-rose-600/20 transition-all">
+        Confirm Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- FLIGHT PASSENGER & SEAT REPORT MODAL                           -->
+<!-- ============================================================== -->
+<div *ngIf="isFlightReportModalOpen && selectedFlightForReport" 
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+     (click)="closeFlightReportModal()">
+  
+  <div class="bg-white border border-slate-200 rounded-3xl max-w-4xl w-full shadow-2xl space-y-5 text-slate-800 animate-in fade-in zoom-in duration-150 max-h-[92vh] flex flex-col overflow-hidden"
+       (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="p-6 pb-4 border-b border-slate-200 flex items-start justify-between gap-4 bg-slate-50/80">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-md shadow-blue-600/30">
+          ✈
+        </div>
+        <div>
+          <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-black uppercase tracking-wider mb-1">
+            Flight Operational Report & Manifest
+          </div>
+          <h3 class="text-xl font-black text-slate-900 leading-tight">
+            {{ selectedFlightForReport.flightNumber }} • {{ selectedFlightForReport.airline }}
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">
+            {{ selectedFlightForReport.source || selectedFlightForReport.origin }} → {{ selectedFlightForReport.destination }} • {{ getAircraftModelForFlight(selectedFlightForReport) }} ({{ getRegistrationForFlight(selectedFlightForReport) }})
+          </p>
+        </div>
+      </div>
+
+      <button type="button" (click)="closeFlightReportModal()" 
+              class="w-9 h-9 rounded-xl bg-slate-200/70 hover:bg-slate-300 text-slate-600 font-black text-sm flex items-center justify-center transition-all" 
+              title="Close Report">
+        ✕
+      </button>
+    </div>
+
+    <!-- Quick Action Toolbar at Top (Print & CSV only - No PDF, No Email) -->
+    <div class="px-6 py-3 bg-white border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <b>{{ reportTotalBooked }}</b> Passengers Booked / <b>{{ reportAvailableSeats }}</b> Available
+        </span>
+        <span *ngIf="reportTotalRevenue > 0" class="inline-flex items-center px-3 py-1 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">
+          Gross Fare: <strong class="ml-1 text-blue-900">{{ reportTotalRevenue | currencyFormatter }}</strong>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button type="button" (click)="printFlightReport()" 
+                class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition-all"
+                title="Print Flight Passenger & Seat Manifest">
+          <span>🖨️</span><span>Print Report</span>
+        </button>
+        <button type="button" (click)="exportFlightReportCsv()" 
+                class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 flex items-center gap-1.5 transition-all"
+                title="Export Manifest as CSV">
+          <span>📊</span><span>Export CSV</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable Report Body -->
+    <div class="p-6 pt-2 space-y-5 overflow-y-auto flex-1">
+      
+      <!-- Flight Summary Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+          <span class="text-[10px] font-bold text-slate-400 uppercase block tracking-wider">Total Seats</span>
+          <span class="text-lg font-black text-slate-900">{{ reportTotalCapacity }} Seats</span>
+          <span class="text-[10px] text-slate-500 block mt-0.5">Airframe capacity</span>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-200">
+          <span class="text-[10px] font-bold text-emerald-800 uppercase block tracking-wider">Booked Seats</span>
+          <span class="text-lg font-black text-emerald-700">{{ reportTotalBooked }} Booked</span>
+          <span class="text-[10px] text-emerald-600 block mt-0.5">{{ reportOccupancyPercent }}% Load Factor</span>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-200">
+          <span class="text-[10px] font-bold text-blue-800 uppercase block tracking-wider">Available Seats</span>
+          <span class="text-lg font-black text-blue-700">{{ reportAvailableSeats }} Open</span>
+          <span class="text-[10px] text-blue-600 block mt-0.5">For reservations</span>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-purple-50/60 border border-purple-200">
+          <span class="text-[10px] font-bold text-purple-800 uppercase block tracking-wider">Flight Schedule</span>
+          <span class="text-sm font-black text-purple-900 truncate block">{{ selectedFlightForReport.departureTime }} - {{ selectedFlightForReport.arrivalTime }}</span>
+          <span class="text-[10px] text-purple-700 block mt-0.5 font-medium">{{ selectedFlightForReport.departureDate }}</span>
+        </div>
+      </div>
+
+      <!-- Cabin Classes Breakdown -->
+      <div class="grid grid-cols-3 gap-3 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200 text-xs">
+        <div class="flex items-center justify-between px-2">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <span class="font-bold text-slate-700">Business Class:</span>
+          </div>
+          <span class="font-black text-slate-900">{{ reportBusinessBooked }} booked</span>
+        </div>
+        <div class="flex items-center justify-between px-2 border-x border-slate-200">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+            <span class="font-bold text-slate-700">Premium Econ:</span>
+          </div>
+          <span class="font-black text-slate-900">{{ reportPremiumBooked }} booked</span>
+        </div>
+        <div class="flex items-center justify-between px-2">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+            <span class="font-bold text-slate-700">Economy Class:</span>
+          </div>
+          <span class="font-black text-slate-900">{{ reportEconomyBooked }} booked</span>
+        </div>
+      </div>
+
+      <!-- Manifest & Passenger/Seat Table Header -->
+      <div class="flex items-center justify-between pt-1">
+        <div>
+          <h4 class="text-sm font-black text-slate-900">Passenger Roster & Seat Allocations</h4>
+          <p class="text-[11px] text-slate-500">Individual passenger manifests and confirmed seat assignments on this flight.</p>
+        </div>
+        <span class="text-[11px] font-mono text-slate-400">Generated: {{ reportGeneratedAt }}</span>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isGeneratingFlightReport" class="py-12 text-center">
+        <div class="inline-block animate-spin rounded-full h-7 w-7 border-4 border-blue-600 border-t-transparent"></div>
+        <p class="text-xs text-slate-500 mt-2 font-bold">Compiling flight manifest and seat roster...</p>
+      </div>
+
+      <!-- Empty State (No Bookings on this Flight) -->
+      <div *ngIf="!isGeneratingFlightReport && flightPassengersList.length === 0" 
+           class="py-10 px-4 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300 space-y-2">
+        <div class="text-3xl">💺</div>
+        <h5 class="text-sm font-black text-slate-800">No Passengers Booked Yet</h5>
+        <p class="text-xs text-slate-500 max-w-md mx-auto">
+          There are currently no passenger reservations recorded for flight {{ selectedFlightForReport.flightNumber }}. All {{ reportTotalCapacity }} seats are open and available for booking at base fare of {{ (selectedFlightForReport.basePrice || 5000) | currencyFormatter }}.
+        </p>
+      </div>
+
+      <!-- Passenger & Seat Details Table -->
+      <div *ngIf="!isGeneratingFlightReport && flightPassengersList.length > 0" 
+           class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-100 text-slate-600 text-[10px] uppercase font-black border-b border-slate-200">
+            <tr>
+              <th class="py-2.5 px-3">Seat #</th>
+              <th class="py-2.5 px-3">Cabin Class</th>
+              <th class="py-2.5 px-3">Passenger Name</th>
+              <th class="py-2.5 px-3">Customer Contact</th>
+              <th class="py-2.5 px-3">Booking Reference</th>
+              <th class="py-2.5 px-3">Status</th>
+              <th class="py-2.5 px-3 text-right">Fare Paid</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 bg-white">
+            <tr *ngFor="let p of flightPassengersList" class="hover:bg-slate-50/80 transition-colors">
+              <!-- Seat # -->
+              <td class="py-2.5 px-3 whitespace-nowrap">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 font-mono font-black text-xs border border-blue-200">
+                  {{ p.seatNumber }}
+                </span>
+              </td>
+
+              <!-- Cabin Class -->
+              <td class="py-2.5 px-3 whitespace-nowrap">
+                <span [ngClass]="{
+                  'bg-amber-50 text-amber-700 border-amber-200': p.travelClass.includes('BUSIN'),
+                  'bg-purple-50 text-purple-700 border-purple-200': p.travelClass.includes('PREM'),
+                  'bg-blue-50 text-blue-700 border-blue-200': !p.travelClass.includes('BUSIN') && !p.travelClass.includes('PREM')
+                }" class="px-2 py-0.5 rounded-md font-bold text-[10px] border">
+                  {{ p.travelClass }}
+                </span>
+              </td>
+
+              <!-- Passenger Name -->
+              <td class="py-2.5 px-3 font-bold text-slate-900 whitespace-nowrap">
+                {{ p.passengerName }}
+              </td>
+
+              <!-- Customer Contact -->
+              <td class="py-2.5 px-3 text-[11px] text-slate-600">
+                <div class="font-medium text-slate-800">{{ p.customerEmail }}</div>
+                <div class="text-[10px] text-slate-400 font-mono" *ngIf="p.customerPhone && p.customerPhone !== '-'">{{ p.customerPhone }}</div>
+              </td>
+
+              <!-- Booking Reference -->
+              <td class="py-2.5 px-3 font-mono font-bold text-blue-600 text-[11px] whitespace-nowrap">
+                {{ p.bookingReference }}
+              </td>
+
+              <!-- Status -->
+              <td class="py-2.5 px-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  {{ p.bookingStatus }}
+                </span>
+              </td>
+
+              <!-- Fare Paid -->
+              <td class="py-2.5 px-3 text-right font-black text-slate-900 whitespace-nowrap">
+                {{ p.fareAmount | currencyFormatter }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="p-4 px-6 border-t border-slate-200 bg-slate-50/60 flex items-center justify-between text-xs">
+      <div class="text-slate-400 font-medium">
+        Flight Operational Manifest • SkyWings Central Fleet Dispatch
+      </div>
+      <button type="button" (click)="closeFlightReportModal()"
+              class="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold transition-all">
+        Close Manifest
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- CREATE / EDIT AIRCRAFT MODAL                                   -->
+<!-- ============================================================== -->
+<div *ngIf="showAircraftModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 text-slate-800 animate-in fade-in zoom-in duration-150">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div class="flex items-center gap-2.5">
+        <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 font-bold flex items-center justify-center text-sm">🛫</span>
+        <div>
+          <h3 class="text-base font-black text-slate-900">{{ aircraftModalMode === 'CREATE' ? 'Register New Aircraft' : 'Edit Aircraft' }}</h3>
+          <p class="text-[11px] text-slate-400">Configure airframe, tail registration, and seating configuration.</p>
+        </div>
+      </div>
+      <button type="button" (click)="closeAircraftModal()" class="text-slate-400 hover:text-slate-600 font-black text-base p-1">✕</button>
+    </div>
+
+    <div class="space-y-3.5 text-xs">
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Aircraft Model *</label>
+        <input type="text" [(ngModel)]="aircraftForm.model" list="aircraft-presets"
+               placeholder="e.g. Airbus A320neo, Boeing 737 MAX 8"
+               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:bg-white focus:outline-none">
+        <datalist id="aircraft-presets">
+          <option value="Airbus A320neo">
+          <option value="Airbus A321neo">
+          <option value="Airbus A350-900">
+          <option value="Airbus A380-800">
+          <option value="Boeing 737 MAX 8">
+          <option value="Boeing 777-300ER">
+          <option value="Boeing 787-9 Dreamliner">
+        </datalist>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Tail / Reg Number *</label>
+          <input type="text" [(ngModel)]="aircraftForm.registrationNumber" placeholder="VT-SKY04"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold uppercase bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Airline Operator</label>
+          <input type="text" [(ngModel)]="aircraftForm.airline" placeholder="SkyWings"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Total Seating Capacity</label>
+          <input type="number" [(ngModel)]="aircraftForm.totalCapacity" placeholder="180"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Seat Layout</label>
+          <select [(ngModel)]="aircraftForm.seatLayout"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-none">
+            <option value="3x3">3x3 (A-F Narrowbody / Widebody)</option>
+            <option value="2x2">2x2 (A-D Regional)</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Operational Status</label>
+        <select [(ngModel)]="aircraftForm.status"
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-none">
+          <option value="ACTIVE">ACTIVE (Flight Ready)</option>
+          <option value="INACTIVE">INACTIVE (Maintenance / Reserve)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+      <button type="button" (click)="closeAircraftModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all">Cancel</button>
+      <button type="button" (click)="saveAircraft()" [disabled]="isAircraftSubmitting"
+              class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-blue-600/20 transition-all flex items-center gap-1.5">
+        <span *ngIf="isAircraftSubmitting" class="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>
+        <span>{{ aircraftModalMode === 'CREATE' ? 'Register Aircraft' : 'Save Changes' }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- CREATE / EDIT MEAL OPTION MODAL                                -->
+<!-- ============================================================== -->
+<div *ngIf="showMealModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 text-slate-800 animate-in fade-in zoom-in duration-150">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div class="flex items-center gap-2.5">
+        <span class="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 font-bold flex items-center justify-center text-sm">🍱</span>
+        <div>
+          <h3 class="text-base font-black text-slate-900">{{ mealModalMode === 'CREATE' ? 'Add In-Flight Meal' : 'Edit Meal Option' }}</h3>
+          <p class="text-[11px] text-slate-400">Configure dietary classification, price, and catering options.</p>
+        </div>
+      </div>
+      <button type="button" (click)="closeMealModal()" class="text-slate-400 hover:text-slate-600 font-black text-base p-1">✕</button>
+    </div>
+
+    <div class="space-y-3.5 text-xs">
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Meal Name *</label>
+        <input type="text" [(ngModel)]="mealForm.name" placeholder="e.g. Vegetarian Royal Thali, Vegan Quinoa Bowl"
+               class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:bg-white focus:outline-none">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Dietary Category</label>
+          <select [(ngModel)]="mealForm.category"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-none">
+            <option value="VEGETARIAN">VEGETARIAN</option>
+            <option value="NON_VEGETARIAN">NON-VEGETARIAN</option>
+            <option value="VEGAN">VEGAN</option>
+            <option value="JAIN">JAIN SPECIAL</option>
+            <option value="GLUTEN_FREE">GLUTEN-FREE</option>
+            <option value="CHILD">CHILD / JUNIOR MEAL</option>
+            <option value="NO_MEAL">NO MEAL SERVICE</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Complimentary / Free</label>
+          <div class="flex items-center h-9 px-3 rounded-xl border border-slate-200 bg-slate-50">
+            <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+              <input type="checkbox" [(ngModel)]="mealForm.complimentary" class="rounded text-blue-600">
+              <span>Complimentary Meal</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Description</label>
+        <textarea [(ngModel)]="mealForm.description" rows="2"
+                  placeholder="Ingredients, accompaniments, and allergen highlights..."
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-slate-50 focus:bg-white focus:outline-none"></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Price (₹)</label>
+          <input type="number" [(ngModel)]="mealForm.price" [disabled]="mealForm.complimentary"
+                 placeholder="0"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:bg-white focus:outline-none disabled:opacity-50">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Inventory Limit</label>
+          <input type="number" [(ngModel)]="mealForm.inventoryLimit" placeholder="100"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+      </div>
+
+      <div>
+        <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+          <input type="checkbox" [(ngModel)]="mealForm.available" class="rounded text-blue-600">
+          <span>Available for customer selection on flights</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+      <button type="button" (click)="closeMealModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all">Cancel</button>
+      <button type="button" (click)="saveMeal()" [disabled]="isMealSubmitting"
+              class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-blue-600/20 transition-all flex items-center gap-1.5">
+        <span *ngIf="isMealSubmitting" class="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>
+        <span>{{ mealModalMode === 'CREATE' ? 'Add Meal' : 'Save Changes' }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- CREATE WEEKLY FLIGHT SCHEDULE MODAL                            -->
+<!-- ============================================================== -->
+<div *ngIf="showScheduleModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl space-y-5 text-slate-800 animate-in fade-in zoom-in duration-150 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div class="flex items-center gap-2.5">
+        <span class="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 font-bold flex items-center justify-center text-sm">📅</span>
+        <div>
+          <h3 class="text-base font-black text-slate-900">New Recurring Weekly Flight Schedule</h3>
+          <p class="text-[11px] text-slate-400">Configure recurring weekly services by operating days, validity range, and aircraft.</p>
+        </div>
+      </div>
+      <button type="button" (click)="closeScheduleModal()" class="text-slate-400 hover:text-slate-600 font-black text-base p-1">✕</button>
+    </div>
+
+    <div class="space-y-4 text-xs">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Schedule Identifier *</label>
+          <input type="text" [(ngModel)]="scheduleForm.scheduleCode" placeholder="SCH-801"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Flight Number *</label>
+          <input type="text" [(ngModel)]="scheduleForm.flightNumber" placeholder="SW-801"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Origin Airport *</label>
+          <input type="text" [(ngModel)]="scheduleForm.origin" placeholder="DEL"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold uppercase bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Destination Airport *</label>
+          <input type="text" [(ngModel)]="scheduleForm.destination" placeholder="BOM"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold uppercase bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Departure Time (HH:mm)</label>
+          <input type="text" [(ngModel)]="scheduleForm.departureTime" placeholder="08:00"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Arrival Time (HH:mm)</label>
+          <input type="text" [(ngModel)]="scheduleForm.arrivalTime" placeholder="10:15"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono font-bold bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Operating Days of the Week Selection -->
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Operating Days of Week (Select 1 or more) *</label>
+        <div class="grid grid-cols-4 sm:grid-cols-7 gap-1.5 pt-1">
+          <button *ngFor="let day of daysOfWeek" type="button"
+                  (click)="toggleOperatingDay(day)"
+                  class="p-2 rounded-xl text-center font-black text-[11px] uppercase transition-all"
+                  [ngClass]="isOperatingDaySelected(day) ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+            {{ day.substring(0, 3) }}
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Validity Start Date *</label>
+          <input type="date" [(ngModel)]="scheduleForm.startDate"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Validity End Date *</label>
+          <input type="date" [(ngModel)]="scheduleForm.endDate"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-none">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Aircraft</label>
+          <select [(ngModel)]="scheduleForm.aircraftId"
+                  class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-white focus:outline-none">
+            <option *ngFor="let a of aircraftList" [value]="a.id">{{ a.model }} ({{ a.registrationNumber }})</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Base Fare (₹)</label>
+          <input type="number" [(ngModel)]="scheduleForm.baseFare" placeholder="4500"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Seat Capacity</label>
+          <input type="number" [(ngModel)]="scheduleForm.totalCapacity" placeholder="180"
+                 class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold bg-slate-50 focus:bg-white focus:outline-none">
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+      <button type="button" (click)="closeScheduleModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all">Cancel</button>
+      <button type="button" (click)="saveSchedule()" [disabled]="isScheduleSubmitting"
+              class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider shadow-md shadow-blue-600/20 transition-all flex items-center gap-1.5">
+        <span *ngIf="isScheduleSubmitting" class="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>
+        <span>Create Recurring Schedule</span>
+      </button>
+    </div>
+  </div>
+</div>
