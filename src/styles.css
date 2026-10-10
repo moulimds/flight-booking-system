@@ -1,0 +1,628 @@
+/* ==========================================================================
+   AirLink / PLANNED / Skytix Design System
+   Matches Reference Screenshots 1-5
+   ========================================================================== */
+
+:root {
+  --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  
+  /* Primary Airline Blues */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+  
+  /* Slate & Neutral Grays */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  
+  /* Accent Colors */
+  --emerald-500: #10b981;
+  --emerald-600: #059669;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --rose-500: #f43f5e;
+  --indigo-600: #4f46e5;
+  
+  /* Elevation & Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-card: 0 10px 30px -5px rgba(27, 46, 94, 0.06);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.35);
+  
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: #F4F7FB;
+  color: var(--slate-800);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--slate-100);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--slate-300);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-400);
+}
+
+/* Layout Utilities */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar-layout {
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid var(--slate-200);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 100vh;
+  background-color: #F8FAFC;
+}
+
+/* Glassmorphism & Cards */
+.card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-xl);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-700), var(--primary-800));
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--slate-100);
+  color: var(--slate-700);
+}
+
+.btn-secondary:hover {
+  background: var(--slate-200);
+  color: var(--slate-900);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--slate-300);
+  color: var(--slate-700);
+}
+
+.btn-outline:hover {
+  border-color: var(--primary-600);
+  color: var(--primary-600);
+  background: var(--primary-50);
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+  border-radius: var(--radius-md);
+}
+
+/* Form Controls */
+.input-control {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: var(--slate-50);
+  border: 1.5px solid var(--slate-200);
+  border-radius: var(--radius-md);
+  color: var(--slate-800);
+  outline: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-control:focus {
+  background-color: #ffffff;
+  border-color: var(--primary-600);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--slate-500);
+  margin-bottom: 6px;
+}
+
+/* Badges & Status */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-confirmed, .badge-success {
+  background: #def7ec;
+  color: #03543f;
+}
+
+.badge-pending, .badge-warning {
+  background: #fef08a;
+  color: #713f12;
+}
+
+.badge-cancelled, .badge-danger {
+  background: #fde8e8;
+  color: #9b1c1c;
+}
+
+.badge-info {
+  background: #e1effe;
+  color: #1e429f;
+}
+
+/* Aircraft Cabin Seat Grid (Ref 3) */
+.aircraft-fuselage {
+  background: #F8FAFC;
+  border: 3px solid var(--slate-300);
+  border-radius: 90px 90px 40px 40px;
+  padding: 40px 20px 30px;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.03), var(--shadow-xl);
+}
+
+.cockpit-window {
+  width: 90px;
+  height: 28px;
+  background: linear-gradient(180deg, var(--slate-700), var(--slate-900));
+  border-radius: 20px 20px 6px 6px;
+  margin: 0 auto 30px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.seat-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.seat-aisle {
+  width: 32px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--slate-400);
+}
+
+.seat-node {
+  width: 44px;
+  height: 48px;
+  background: #ffffff;
+  border: 2px solid var(--slate-200);
+  border-radius: 10px 10px 6px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.seat-node:hover:not(.seat-occupied) {
+  border-color: var(--primary-500);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+}
+
+.seat-node.seat-selected {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  border-color: var(--primary-600);
+  color: #ffffff;
+  box-shadow: var(--shadow-glow);
+  transform: scale(1.05);
+}
+
+.seat-node.seat-occupied {
+  background: var(--slate-200);
+  border-color: var(--slate-300);
+  color: var(--slate-400);
+  cursor: not-allowed;
+}
+
+.seat-node.seat-business {
+  width: 54px;
+  height: 52px;
+  border-color: var(--amber-400);
+  background: #fffdf5;
+}
+
+/* Boarding Pass (Ref 5) */
+.boarding-pass-card {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  max-width: 440px;
+  margin: 0 auto;
+  border: 1px solid var(--slate-200);
+}
+
+.boarding-pass-notch {
+  position: relative;
+}
+
+.boarding-pass-notch::before, .boarding-pass-notch::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  width: 24px;
+  height: 24px;
+  background-color: #F4F7FB;
+  border-radius: 50%;
+  z-index: 10;
+}
+.boarding-pass-notch::before { left: -12px; }
+.boarding-pass-notch::after { right: -12px; }
+
+.barcode-strip {
+  font-family: var(--font-mono);
+  background: #000000;
+  height: 48px;
+  width: 100%;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  letter-spacing: 0.4em;
+  background: repeating-linear-gradient(
+    90deg,
+    #111,
+    #111 3px,
+    #fff 3px,
+    #fff 6px,
+    #111 6px,
+    #111 8px,
+    #fff 8px,
+    #fff 11px
+  );
+}
+
+/* Route Flight Curve Line (Ref 1 & 5) */
+.flight-route-line {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.flight-route-line .route-track {
+  flex: 1;
+  height: 2px;
+  border-top: 2px dashed var(--slate-300);
+  position: relative;
+}
+
+.flight-route-line .plane-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  padding: 4px;
+  border-radius: 50%;
+  color: var(--primary-600);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.03); }
+}
+
+.pulse-animation {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   Dark Theme Rules & Overrides
+   ========================================================================== */
+body.dark-theme,
+.dark-theme {
+  --slate-50: #0f172a;
+  --slate-100: #1e293b;
+  --slate-200: #334155;
+  --slate-300: #475569;
+  --slate-400: #94a3b8;
+  --slate-500: #cbd5e1;
+  --slate-600: #e2e8f0;
+  --slate-700: #f1f5f9;
+  --slate-800: #f8fafc;
+  --slate-900: #ffffff;
+
+  background-color: #0b1120 !important;
+  color: #f1f5f9 !important;
+}
+
+body.dark-theme .card,
+.dark-theme .card {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-theme .sidebar-layout,
+.dark-theme .sidebar-layout {
+  background: #0f172a !important;
+  border-right-color: #1e293b !important;
+}
+
+body.dark-theme .main-content,
+.dark-theme .main-content {
+  background-color: #0b1120 !important;
+}
+
+body.dark-theme .input-control,
+.dark-theme .input-control {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+body.dark-theme .input-control:focus,
+.dark-theme .input-control:focus {
+  background-color: #0f172a !important;
+  border-color: var(--primary-500) !important;
+}
+
+body.dark-theme .glass-panel,
+.dark-theme .glass-panel {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-theme .btn-secondary,
+.dark-theme .btn-secondary {
+  background: #334155 !important;
+  color: #f8fafc !important;
+}
+
+body.dark-theme .seat-node,
+.dark-theme .seat-node {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+body.dark-theme .badge-cancelled,
+.dark-theme .badge-cancelled {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #fca5a5 !important;
+}
+
+body.dark-theme .badge-confirmed,
+.dark-theme .badge-confirmed {
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #6ee7b7 !important;
+}
+
+/* Comprehensive Universal Dark Theme Overrides for All Pages */
+html.dark body,
+body.dark-theme {
+  background-color: #0b1120 !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark .min-h-screen.bg-\[\#F4F7FB\],
+body.dark-theme .min-h-screen.bg-\[\#F4F7FB\],
+html.dark .bg-\[\#F4F7FB\],
+body.dark-theme .bg-\[\#F4F7FB\] {
+  background-color: #0b1120 !important;
+}
+
+html.dark header,
+body.dark-theme header {
+  background-color: rgba(15, 23, 42, 0.95) !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+html.dark aside,
+body.dark-theme aside {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+html.dark .bg-white,
+body.dark-theme .bg-white {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark .bg-slate-50,
+body.dark-theme .bg-slate-50 {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark .bg-slate-100,
+body.dark-theme .bg-slate-100 {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-300,
+body.dark-theme .border-slate-100,
+body.dark-theme .border-slate-200,
+body.dark-theme .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+body.dark-theme .text-slate-900,
+body.dark-theme .text-slate-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-600,
+body.dark-theme .text-slate-700,
+body.dark-theme .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-500,
+html.dark .text-slate-400,
+body.dark-theme .text-slate-500,
+body.dark-theme .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea,
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+html.dark input::placeholder,
+body.dark-theme input::placeholder {
+  color: #64748b !important;
+}
+
+html.dark .nav-item,
+body.dark-theme .nav-item {
+  color: #94a3b8;
+}
+
+html.dark .nav-item:hover,
+body.dark-theme .nav-item:hover {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
+html.dark .active-nav,
+body.dark-theme .active-nav {
+  background-color: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+
+/* Modal and Dropdown surfaces in Dark Mode */
+html.dark .shadow-xl,
+html.dark .shadow-2xl,
+body.dark-theme .shadow-xl,
+body.dark-theme .shadow-2xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Smooth Transition between themes */
+body, .main-content, header, aside, .card, nav {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
+
