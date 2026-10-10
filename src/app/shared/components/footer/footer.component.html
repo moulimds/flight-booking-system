@@ -1,0 +1,179 @@
+<footer class="bg-white border-t border-slate-200 mt-auto transition-colors duration-200">
+  <!-- Main Footer Content -->
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-12 lg:py-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
+      
+      <!-- Brand & Mission Column (Col 1-2) -->
+      <div class="lg:col-span-2 space-y-4">
+        <div class="flex items-center gap-3 cursor-pointer" routerLink="/">
+          <img src="assets/icons/skywings-icon.svg" alt="SkyWings Logo" class="w-10 h-10 rounded-2xl shadow-md shadow-blue-500/25 object-cover" />
+          <div>
+            <span class="text-2xl font-black text-slate-900 tracking-tight">Sky<span class="text-blue-600">Wings</span></span>
+            <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest leading-none">Airlines Global Suite</p>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-500 leading-relaxed max-w-sm">
+          SkyWings connects premier destinations with unprecedented comfort. Experience luxury in-flight dining, state-of-the-art aircraft, and our guaranteed 8-hour operational departure standard.
+        </p>
+
+        <!-- Certifications & Safety Badges -->
+        <div class="flex flex-wrap items-center gap-2 pt-1 text-[11px] font-semibold text-slate-500">
+          <span class="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 flex items-center gap-1.5 shadow-2xs">
+            <span class="text-emerald-500">✓</span> IATA Certified
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 flex items-center gap-1.5 shadow-2xs">
+            <span class="text-blue-500">🛡️</span> 256-bit SSL Secure
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 flex items-center gap-1.5 shadow-2xs">
+            <span class="text-amber-500">⭐</span> 4.9/5 Passenger Rating
+          </span>
+        </div>
+
+        <!-- 24/7 Helpline Banner -->
+        <div class="p-3.5 rounded-2xl bg-blue-50/80 border border-blue-200/80 flex items-center justify-between text-xs max-w-sm">
+          <div>
+            <span class="text-[10px] uppercase font-black text-blue-600 block">24x7 Customer Helpline</span>
+            <span class="font-extrabold text-blue-950 font-mono text-sm">+91 1800-SKY-WINGS</span>
+          </div>
+          <a routerLink="/support" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition-all shadow-xs">
+            Chat 24/7
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Links: Explore & Book -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-black uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-1.5">
+          Explore & Book
+        </h4>
+        <ul class="space-y-2 text-xs text-slate-600">
+          <li>
+            <a routerLink="/flights/dashboard" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>✈️</span> Search Flights
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="['/flights/dashboard']" [queryParams]="{ tripType: 'ROUND_TRIP' }" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>🔄</span> Round-Trip Journeys
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="['/flights/dashboard']" [queryParams]="{ tripType: 'MULTI_CITY' }" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>🌐</span> Multi-City Itineraries
+            </a>
+          </li>
+          <li>
+            <a routerLink="/tracking/live-radar" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>🛰️</span> Live Flight Radar
+            </a>
+          </li>
+          <li>
+            <a routerLink="/flights/dashboard" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>🍱</span> In-Flight Dining Menu
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Quick Links: Manage Travel -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-black uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-1.5">
+          Manage Travel
+        </h4>
+        <ul class="space-y-2 text-xs text-slate-600">
+          <li>
+            <a routerLink="/tickets/my-tickets" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>🎫</span> My Bookings & PNR
+            </a>
+          </li>
+          <li>
+            <a routerLink="/tickets/my-tickets" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>🖨️</span> Web Check-In & Pass
+            </a>
+          </li>
+          <li>
+            <a routerLink="/profile" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>👤</span> Passenger Profile & Passport
+            </a>
+          </li>
+          <li>
+            <a routerLink="/support" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>⏳</span> 8-Hour Departure Policy
+            </a>
+          </li>
+          <li>
+            <a routerLink="/support" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>💳</span> GST Invoices & Receipts
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Quick Links: Customer Support & Theme -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-black uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-1.5">
+          Support & Preferences
+        </h4>
+        <ul class="space-y-2 text-xs text-slate-600">
+          <li>
+            <a routerLink="/support" class="hover:text-emerald-700 text-emerald-800 font-bold transition-colors flex items-center gap-1.5">
+              <span>💬</span> Customer Support Chat
+            </a>
+          </li>
+          <li>
+            <a routerLink="/support" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>❓</span> Centralized FAQs
+            </a>
+          </li>
+          <li>
+            <a routerLink="/support" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>📝</span> Submit Support Ticket
+            </a>
+          </li>
+          <li>
+            <a routerLink="/support" class="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+              <span>🔄</span> Cancellation & Refund Rules
+            </a>
+          </li>
+        </ul>
+
+        <!-- Direct Theme Switcher in Footer -->
+        <div class="pt-2">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Appearance Theme</span>
+          <button (click)="themeService.toggleTheme()"
+                  type="button"
+                  class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs font-semibold text-slate-700 transition-all w-full justify-between">
+            <span class="flex items-center gap-1.5">
+              <span>{{ themeService.isDark() ? '🌙' : '☀️' }}</span>
+              <span>{{ themeService.isDark() ? 'Dark Theme' : 'Light Theme' }}</span>
+            </span>
+            <span class="text-[10px] font-bold text-blue-600 uppercase">Change</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom Sub-Footer Bar -->
+  <div class="border-t border-slate-100 py-6 px-6 lg:px-8 bg-slate-50/50">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
+      <div class="flex items-center gap-2">
+        <span>© {{ currentYear }} SkyWings Airlines Inc. All rights reserved.</span>
+        <span class="hidden md:inline">•</span>
+        <span class="hidden md:inline text-slate-400">Hubs: DEL • BOM • BLR • MAA • HYD • CCU</span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4 text-[11px]">
+        <a routerLink="/support" class="hover:text-blue-600 transition-colors">Privacy Policy</a>
+        <span>•</span>
+        <a routerLink="/support" class="hover:text-blue-600 transition-colors">Conditions of Carriage</a>
+        <span>•</span>
+        <a routerLink="/support" class="hover:text-blue-600 transition-colors">Passenger Charter</a>
+        <span>•</span>
+        <a routerLink="/support" class="hover:text-blue-600 transition-colors">Site Map</a>
+      </div>
+    </div>
+  </div>
+</footer>
