@@ -1,0 +1,14 @@
+﻿.seat-node {
+  border: 1.5px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #1e293b;
+  cursor: pointer;
+}
+.seat-node:hover:not(:disabled) {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+.seat-business {
+  border-color: #f59e0b;
+  background-color: #fffbeb;
+}
