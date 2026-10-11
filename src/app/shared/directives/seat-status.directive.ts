@@ -15,7 +15,7 @@ export class SeatStatusDirective implements OnChanges {
   ngOnChanges(): void {
     const element = this.el.nativeElement;
 
-    // Reset baseline classes
+
     this.renderer.removeClass(element, 'seat-available');
     this.renderer.removeClass(element, 'seat-occupied');
     this.renderer.removeClass(element, 'seat-selected');
