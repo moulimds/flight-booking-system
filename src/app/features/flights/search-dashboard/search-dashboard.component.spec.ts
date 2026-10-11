@@ -17,3 +17,4 @@ describe('SearchDashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
