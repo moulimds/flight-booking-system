@@ -153,7 +153,7 @@ export class FlightFilterPipe implements PipeTransform {
             return false;
           }
         } catch {
-          // Date parsing error fallback
+          
         }
       }
 
