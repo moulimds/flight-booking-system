@@ -211,6 +211,7 @@ export class LoginComponent implements OnInit {
       if (!navigated) {
         this.router.navigate(['/flights/dashboard']);
       }
+      
     }).catch(err => {
       console.warn('Navigation by URL failed, falling back to /flights/dashboard', err);
       this.router.navigate(['/flights/dashboard']);
