@@ -68,5 +68,6 @@ export class SupportConsoleComponent implements OnInit {
       (b.passengerName && b.passengerName.toLowerCase().includes(term)) ||
       (b.passengerEmail && b.passengerEmail.toLowerCase().includes(term))
     );
+    
   }
 }
