@@ -13,7 +13,7 @@ export class StatusBadgeDirective implements OnChanges {
     const element = this.el.nativeElement;
     this.renderer.addClass(element, 'badge');
 
-    // Remove previous badge types
+    
     ['badge-confirmed', 'badge-pending', 'badge-cancelled', 'badge-info', 'badge-success', 'badge-warning', 'badge-danger'].forEach(cls => {
       this.renderer.removeClass(element, cls);
     });
